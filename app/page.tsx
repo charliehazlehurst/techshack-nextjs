@@ -40,8 +40,8 @@ export default function Home() {
             key={href}
             href={href}
             className={`${
-              pathname === href ? 'text-blue-500' : 'text-black-500'
-            } hover:text-blue-700 transition-colors duration-300`}
+              pathname === href ? 'text-orange-500' : 'text-black-500'
+            } hover:text-orange-500 transition-colors duration-300`}
           >
             {label}
           </Link>
@@ -50,8 +50,8 @@ export default function Home() {
           <Link
             href="/my_account"
             className={`${
-              pathname === '/my_account' ? 'text-blue-500' : 'text-black-500'
-            } hover:text-blue-700 transition-colors duration-300`}
+              pathname === '/my_account' ? 'text-orange-500' : 'text-black-500'
+            } hover:text-orange-500 transition-colors duration-300`}
           >
             MY ACCOUNT
           </Link>
