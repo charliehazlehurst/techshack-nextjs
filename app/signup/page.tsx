@@ -37,8 +37,8 @@ export default function RegisterPage() {
         body: JSON.stringify({ username, email, password }),
       });
 
-
       const data = await res.json();
+      console.log('API response data:', data); // Log the response from the API for debugging
 
       if (res.ok) {
         setMessage('Registration successful! You may now sign in.');
@@ -49,14 +49,13 @@ export default function RegisterPage() {
         setMessage(data.error || 'Registration failed.');
       }
     } catch (error) {
-      console.error('Error during registration:', error);
+      console.error('Error during registration:', error); // Log the error for debugging
       setMessage('An error occurred. Please try again.');
     }
   };
 
   return (
     <main className="min-h-screen p-4">
-
       {/* Logo */}
       <div className="logo py-4 text-center">
         <Link href="/">
@@ -108,7 +107,7 @@ export default function RegisterPage() {
         </button>
         {message && <p className="mt-2 text-red-600">{message}</p>}
       </form>
-
     </main>
   );
 }
+
