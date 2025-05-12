@@ -66,36 +66,7 @@ export default function Home() {
       <div className="my-12 flex justify-center">
         <hr className="w-3/4 border-black" />
       </div>
-
-      {/* Footer */}
-<footer className="text-center pb-24">
-  <Link href="mailto:techshack21@gmail.com">@techshack.co.uk</Link>
-  <br /><br />
-  <div className="flex justify-center gap-4">
-    <Link href="https://www.instagram.com/techshack_uk?igsh=MWZla3MwNDRraHZk">
-      <Image
-        src="/images/insta.jpg"
-        alt="Instagram"
-        width={20}
-        height={20}
-        quality={100}
-        className="rounded"
-      />
-    </Link>
-    <Link href="https://www.facebook.com/profile.php?id=100092390929930">
-      <Image
-        src="/images/fb.jpg"
-        alt="Facebook"
-        width={20}
-        height={20}
-        quality={100}
-        className="rounded"
-      />
-    </Link>
-  </div>
-  <p className="mt-4">©2025 by Tech Shack</p>
-</footer>
-
+      
     </main>
   );
 }

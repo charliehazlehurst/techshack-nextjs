@@ -47,7 +47,7 @@ export default function Footer() {
         </Link>
       </div>
 
-      <p className="text-xs text-gray-500 mt-4">©2024 by Tech Shack</p>
+      <p className="text-xs text-gray-500 mt-4">©2025 by Tech Shack</p>
     </footer>
   )
 }
