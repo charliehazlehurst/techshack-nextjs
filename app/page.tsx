@@ -75,15 +75,23 @@ export default function Home() {
       </div>
 
       {/* Background Section */}
-      <section className="flex flex-col md:flex-row items-center gap-6 px-8">
-        <div className="left-img">
-          <Image src="/images/logo2.jpg" alt="TechShack Image" width={250} height={250} />
-        </div>
-        <div className="blocktext max-w-xl text-center md:text-left">
-          <h1 className="text-2xl font-bold mb-4">OUR BACKGROUND</h1>
-          <p>SINCE 2022, TECHSHACK HAS STRIVED TO DELIVER SUPERIOR TECH SOLUTIONS. BASED IN MERSEYSIDE, WE EXCEL IN LUXURY TECH CARE, EARNING A 5-STAR RATING ON GOOGLE AND FACEBOOK. OFFERING A RANGE OF PACKAGES, FROM MAINTENANCE TO FULL OVERHAULS, WE USE TOP BRANDS LIKE INFINITY WAX & GTECHNIQ FOR UNMATCHED RESULTS. BOOK WITH US TODAY FOR A TECH EXPERIENCE LIKE NO OTHER!</p>
-        </div>
-      </section>
+      <section className="flex flex-col md:flex-row items-center justify-center gap-8 px-4 md:px-12 py-12 text-center md:text-left">
+      <div className="flex justify-center md:justify-end w-full md:w-1/3">
+       <Image
+         src="/images/logo2.jpg"
+         alt="TechShack Image"
+         width={250}
+         height={250}
+         className="rounded-md object-contain"
+      />
+      </div>
+  <div className="max-w-xl w-full md:w-2/3">
+    <h1 className="text-2xl md:text-3xl font-bold mb-4">OUR BACKGROUND</h1>
+    <p className="text-base md:text-lg leading-relaxed">
+      SINCE 2022, TECHSHACK HAS STRIVED TO DELIVER SUPERIOR TECH SOLUTIONS. BASED IN MERSEYSIDE, WE EXCEL IN LUXURY TECH CARE, EARNING A 5-STAR RATING ON GOOGLE AND FACEBOOK. OFFERING A RANGE OF PACKAGES, FROM MAINTENANCE TO FULL OVERHAULS, WE USE TOP BRANDS LIKE INFINITY WAX & GTECHNIQ FOR UNMATCHED RESULTS. BOOK WITH US TODAY FOR A TECH EXPERIENCE LIKE NO OTHER!
+    </p>
+  </div>
+</section>
 
       {/* Divider */}
       <div className="my-12 flex justify-center">
