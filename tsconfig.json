@@ -16,12 +16,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "target": "ES2017"
+    "target": "ES2017",
+    "baseUrl": ".",  // This tells the compiler where to start resolving modules from.
+    "paths": {
+      "@/*": ["./app/*"]  // This allows the alias '@' to point to your 'app' directory.
+    }
   },
   "include": [
     "next-env.d.ts",
