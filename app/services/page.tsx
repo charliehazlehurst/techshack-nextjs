@@ -1,5 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
 
 const services = [
   {
@@ -7,7 +9,7 @@ const services = [
     price: "Starting From: £20",
     description:
       "This service is added onto total price when the fault is unknown. (Assessment of the device to determine faults)",
-    imgSrc: "/images/engine.jpg",
+    imgSrc: "/images/assessment.jpg",
     altText: "GENERAL ASSESSMENT",
   },
   {
@@ -15,7 +17,7 @@ const services = [
     price: "Starting From: £30",
     description:
       "A deep clean on your device. From Accessories to Whole Devices (whole surface, all ports, microphones, inside of device, etc.)",
-    imgSrc: "/images/conv.jpg",
+    imgSrc: "/images/maint.jpg",
     altText: "GENERAL MAINTENANCE",
   },
   {
@@ -23,14 +25,14 @@ const services = [
     price: "Starting From: £30",
     description:
       "This service is required when there is a faulty or damaged part that may need repairing or replacing in your device, from Battery Replacements to Port Repairs to Phone Screen Replacements to Motherboard Replacements!",
-    imgSrc: "/images/pet.jpg",
+    imgSrc: "/images/screen.jpg",
     altText: "HARDWARE / SCREEN REPAIR",
   },
   {
     title: "DATA RECOVERY",
     price: "£25 per Device",
     description: "Need to recover data from a broken device? Book this service to restore all of your valuable pictures, etc.",
-    imgSrc: "/images/glass.jpg",
+    imgSrc: "/images/data.jpg",
     altText: "DATA RECOVERY",
   },
   {
@@ -42,20 +44,32 @@ const services = [
   },
 ];
 
-const ServicesPage = () => {
+export default function Services() {
+  const isAuthenticated = false; // Placeholder for authentication logic
+
   return (
-    <div>
-      <header className="flex justify-between items-center py-4 px-8 bg-gray-100">
-        <div className="logo">
-          <Link href="/">
-            <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={100} height={100} />
-          </Link>
-        </div>
-      </header>
+    <main className="min-h-screen">
+      {/* Logo */}
+      <div className="logo py-4">
+        <Link href="/">
+          <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
+        </Link>
+      </div>
 
-      <main className="py-12 px-4 md:px-16">
-        <h1 className="text-4xl font-extrabold text-center mb-10">OUR AVAILABLE SERVICES!</h1>
+      {/* Auth Links */}
+      <div className="auth-links text-center mb-4">
+        {!isAuthenticated && (
+          <>
+            <Link href="/signin" className="mr-2">SIGN IN</Link> | <Link href="/signup" className="ml-2">REGISTER</Link>
+          </>
+        )}
+      </div>
 
+      {/* Services Header */}
+      <h1 className="text-4xl font-extrabold text-center mb-10">OUR AVAILABLE SERVICES!</h1>
+
+      {/* Services List */}
+      <div className="py-12 px-4 md:px-16">
         {services.map((service, index) => (
           <div key={index} className="flex flex-col md:flex-row items-center mb-10">
             <div className="w-full md:w-1/3 flex justify-center mb-4 md:mb-0">
@@ -74,9 +88,7 @@ const ServicesPage = () => {
             </div>
           </div>
         ))}
-      </main>
-    </div>
+      </div>
+    </main>
   );
-};
-
-export default ServicesPage;
+}
