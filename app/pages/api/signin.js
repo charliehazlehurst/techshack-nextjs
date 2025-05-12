@@ -1,38 +1,55 @@
 // /pages/api/signin.js
 
 import supabase from '../../lib/supabase';
+import bcrypt from 'bcryptjs';
 
-export async function POST(req) {
-  const { username, email, password } = await req.json();
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-  if (!username || !email || !password) {
-    return NextResponse.json({ error: 'Please provide all required fields' }, { status: 400 });
+  const { email, password } = req.body;
+
+  // Basic validation
+  if (
+    !email ||
+    !password ||
+    typeof email !== 'string' ||
+    typeof password !== 'string'
+  ) {
+    return res.status(400).json({ error: 'Please provide both email and password.' });
   }
 
   try {
-    // Query the 'users' table to find the user by username or email
+    // Fetch the user by email
     const { data: user, error } = await supabase
       .from('users')
-      .select('*')
-      .eq('username', username)
-      .or(`email.eq.${email}`)
+      .select('id, username, email, password')
+      .eq('email', email)
       .single();
 
     if (error || !user) {
-      return NextResponse.json({ error: 'Invalid username or email' }, { status: 401 });
+      return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    // Validate password (you'll want to hash and compare passwords securely)
-    if (password !== user.password) {
-      return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
+    // Compare the provided password with the hashed password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    // Return success if credentials are correct
-    return NextResponse.json({ message: 'Sign-in successful' }, { status: 200 });
-
-  } catch (error) {
-    console.error('Error during sign-in:', error);
-    return NextResponse.json({ error: 'An error occurred during sign-in' }, { status: 500 });
+    // Auth successful
+    return res.status(200).json({
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (err) {
+    console.error('Signin error:', err);
+    return res.status(500).json({ error: 'An internal server error occurred.' });
   }
 }
-

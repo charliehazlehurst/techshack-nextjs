@@ -1,28 +1,63 @@
-// /pages/api/signup.js
-
+// pages/api/signup.js
 import supabase from '../../lib/supabase';
+import bcrypt from 'bcrypt';
 
-export async function POST(req) {
-  const { username, email, password } = await req.json();
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-  if (!username || !email || !password) {
-    return NextResponse.json({ error: 'Please provide all required fields' }, { status: 400 });
+  const { username, email, password } = req.body;
+
+  // Input validation
+  if (
+    !username ||
+    !email ||
+    !password ||
+    typeof username !== 'string' ||
+    typeof email !== 'string' ||
+    typeof password !== 'string'
+  ) {
+    return res.status(400).json({ error: 'Invalid input data.' });
+  }
+
+  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,20}$/;
+  if (!passwordPattern.test(password)) {
+    return res.status(400).json({
+      error:
+        'Password must be 8–20 characters long with uppercase, lowercase, number, and special character.',
+    });
   }
 
   try {
-    // Insert the user into the 'users' table
-    const { data, error } = await supabase
+    // Check if email already exists
+    const { data: existingUser, error: fetchError } = await supabase
       .from('users')
-      .insert([{ username, email, password }]);
+      .select('id')
+      .eq('email', email)
+      .single();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (existingUser) {
+      return res.status(409).json({ error: 'Email already in use.' });
     }
 
-    return NextResponse.json({ message: 'User registered successfully!' }, { status: 201 });
+    // Hash the password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  } catch (error) {
-    console.error('Error during signup:', error);
-    return NextResponse.json({ error: 'An error occurred during registration' }, { status: 500 });
+    // Insert the new user
+    const { data, error: insertError } = await supabase
+      .from('users')
+      .insert([{ username, email, password: hashedPassword }]);
+
+    if (insertError) {
+      return res.status(500).json({ error: insertError.message });
+    }
+
+    return res.status(201).json({ message: 'User registered successfully!' });
+  } catch (err) {
+    console.error('Signup error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
   }
 }
+
