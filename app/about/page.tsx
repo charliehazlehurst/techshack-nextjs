@@ -32,20 +32,6 @@ const AboutPage = () => {
         </div>
       </header>
 
-      <nav>
-        <ul>
-          <li><Link href="/">HOME</Link></li>
-          <li className="active"><Link href="/about">ABOUT</Link></li>
-          <li><Link href="/services">SERVICES</Link></li>
-          <li><Link href="/packages">PACKAGES</Link></li>
-          <li><Link href="/reviews">REVIEWS</Link></li>
-          <li><Link href="/contact">CONTACT US</Link></li>
-          {isAuthenticated && (
-            <li><Link href="/my_account">MY ACCOUNT</Link></li>
-          )}
-        </ul>
-      </nav>
-
       <main>
         <section className="about-section">
           <div className="restore-img">

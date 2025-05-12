@@ -2,6 +2,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 
 export const metadata: Metadata = {
   title: 'Tech Shack',
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body>
         <Navbar isAuthenticated={false} /> {/* Change this to true when logged in */}
         {children}
+        <Footer />
       </body>
     </html>
   )

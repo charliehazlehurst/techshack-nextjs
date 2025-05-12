@@ -26,38 +26,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="w-full flex flex-wrap justify-center gap-4 text-lg font-semibold p-4 bg-white z-50">
-        {[
-          { href: '/', label: 'HOME' },
-          { href: '/about', label: 'ABOUT' },
-          { href: '/services', label: 'SERVICES' },
-          { href: '/booking', label: 'BOOK NOW' },
-          { href: '/reviews', label: 'REVIEWS' },
-          { href: '/contact', label: 'CONTACT US' },
-        ].map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`${
-              pathname === href ? 'text-orange-500' : 'text-black-500'
-            } hover:text-orange-500 transition-colors duration-300`}
-          >
-            {label}
-          </Link>
-        ))}
-        {isAuthenticated && (
-          <Link
-            href="/my_account"
-            className={`${
-              pathname === '/my_account' ? 'text-orange-500' : 'text-black-500'
-            } hover:text-orange-500 transition-colors duration-300`}
-          >
-            MY ACCOUNT
-          </Link>
-        )}
-      </nav>
-
       {/* Hero Section */}
       <div
         className="hero-image"
@@ -74,17 +42,17 @@ export default function Home() {
         <hr className="w-3/4 border-black" />
       </div>
 
-      {/* Background Section */}
-      <section className="flex flex-col md:flex-row items-center justify-center gap-8 px-4 md:px-12 py-12 text-center md:text-left">
-      <div className="flex justify-center md:justify-end w-full md:w-1/3">
-       <Image
-         src="/images/logo2.jpg"
-         alt="TechShack Image"
-         width={250}
-         height={250}
-         className="rounded-md object-contain"
-      />
-      </div>
+{/* Background Section */}
+<section className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-8 px-4 md:px-12 py-12 text-center md:text-left">
+  <div className="flex justify-center md:justify-end w-full md:w-1/3">
+    <Image
+      src="/images/logo2.jpg"
+      alt="TechShack Image"
+      width={250}
+      height={250}
+      className="rounded-md object-contain"
+    />
+  </div>
   <div className="max-w-xl w-full md:w-2/3">
     <h1 className="text-2xl md:text-3xl font-bold mb-4">OUR BACKGROUND</h1>
     <p className="text-base md:text-lg leading-relaxed">
@@ -92,6 +60,7 @@ export default function Home() {
     </p>
   </div>
 </section>
+
 
       {/* Divider */}
       <div className="my-12 flex justify-center">
