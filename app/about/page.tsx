@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image'; // Use next/image for optimized image loading
 import Link from 'next/link'; // Use Link for navigation
 
+
 const AboutPage = () => {
   const isAuthenticated = false; // Example, replace with actual authentication logic
 

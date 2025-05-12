@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Script from 'next/script';
 import { loadStripe } from '@stripe/stripe-js';
 
+
 const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); // Replace with your real key in prod
 
 const mockServices = [
@@ -22,6 +23,8 @@ export default function BookingPage() {
   const [elements, setElements] = useState(null);
   const [card, setCard] = useState(null);
   const [cardError, setCardError] = useState('');
+
+   const isAuthenticated = false;
 
   useEffect(() => {
     setServices(mockServices);
@@ -77,26 +80,22 @@ export default function BookingPage() {
   };
 
   return (
-    <main className="min-h-screen px-4 py-8">
-      <div className="flex justify-center mb-6">
+    <main className="min-h-screen">
+      {/* Logo */}
+      <div className="logo">
         <Link href="/">
           <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
         </Link>
       </div>
 
-      <div className="text-center mb-4">
-        <Link href="/signin">SIGN IN</Link> | <Link href="/signup">REGISTER</Link>
+      {/* Auth Links */}
+      <div className="auth-links">
+        {!isAuthenticated && (
+          <>
+            <Link href="/signin">SIGN IN</Link> | <Link href="/signup">REGISTER</Link>
+          </>
+        )}
       </div>
-
-      <nav className="flex justify-center gap-4 text-sm mb-8">
-        <Link href="/">HOME</Link>
-        <Link href="/about">ABOUT</Link>
-        <Link href="/services">SERVICES</Link>
-        <span className="font-bold underline">BOOK NOW</span>
-        <Link href="/reviews">REVIEWS</Link>
-        <Link href="/contact">CONTACT US</Link>
-        {/* <Link href="/my_account">MY ACCOUNT</Link> */}
-      </nav>
 
       <h1 className="text-3xl font-bold text-center mb-10">Book a Service</h1>
 
@@ -136,19 +135,6 @@ export default function BookingPage() {
           <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Book Now</button>
         </form>
       </div>
-
-      <footer className="text-center mt-16 pb-12">
-        <a href="mailto:techshack21@gmail.com">@techshack.co.uk</a>
-        <div className="flex justify-center mt-4 space-x-4">
-          <a href="https://www.instagram.com/techshack_uk?igsh=MWZla3MwNDRraHZk">
-            <Image src="/images/insta.jpg" alt="Instagram" width={30} height={30} />
-          </a>
-          <a href="https://www.facebook.com/profile.php?id=100092390929930">
-            <Image src="/images/fb.jpg" alt="Facebook" width={30} height={30} />
-          </a>
-        </div>
-        <p className="mt-4">©2024 by Tech Shack</p>
-      </footer>
 
       {/* Stripe Script */}
       <Script src="https://js.stripe.com/v3/" strategy="beforeInteractive" />
