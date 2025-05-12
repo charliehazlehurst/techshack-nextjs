@@ -51,14 +51,6 @@ const ServicesPage = () => {
             <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={100} height={100} />
           </Link>
         </div>
-        <nav className="space-x-4 text-lg font-semibold">
-          <Link href="/">HOME</Link>
-          <Link href="/about">ABOUT</Link>
-          <Link href="/services" className="text-orange-500">
-            SERVICES
-          </Link>
-          <Link href="/contact">CONTACT US</Link>
-        </nav>
       </header>
 
       <main className="py-12 px-4 md:px-16">
@@ -83,23 +75,6 @@ const ServicesPage = () => {
           </div>
         ))}
       </main>
-
-      <footer className="text-center py-12 bg-gray-100">
-        <Link href="mailto:techshack21@gmail.com" className="text-lg">
-          @techshack21@gmail.com
-        </Link>
-        <br />
-        <br />
-        <div className="flex justify-center space-x-4">
-          <Link href="https://www.instagram.com/techshack_uk/">
-            <Image src="/images/insta.jpg" alt="Instagram" width={40} height={40} className="rounded" />
-          </Link>
-          <Link href="https://www.facebook.com/people/TechShack/100092390929930/">
-            <Image src="/images/fb.jpg" alt="Facebook" width={40} height={40} className="rounded" />
-          </Link>
-        </div>
-        <p className="mt-4">©2024 by Tech Shack</p>
-      </footer>
     </div>
   );
 };
