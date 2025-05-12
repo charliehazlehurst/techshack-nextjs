@@ -17,10 +17,17 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "target": "ES2017",
-    "baseUrl": ".",  // This tells the compiler where to start resolving modules from.
+    "baseUrl": ".", // This tells the compiler where to start resolving modules from.
     "paths": {
-      "@/*": ["./app/*"]  // This allows the alias '@' to point to your 'app' directory.
-    }
+      "@/*": [
+        "./app/*"
+      ] // This allows the alias '@' to point to your 'app' directory.
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",

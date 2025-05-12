@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/router'; // for navigation
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/compat/router'; // Import from 'next/compat/router' for pages directory
 
 export default function Signin() {
   const [username, setUsername] = useState('');
@@ -10,7 +10,12 @@ export default function Signin() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const router = useRouter();
+  const [isClient, setIsClient] = useState(false); // Track if component is mounted on the client
+  const router = useRouter(); // This will now work because it's called inside the functional component
+
+  useEffect(() => {
+    setIsClient(true); // Set this flag when the component mounts in the client
+  }, []); // Empty dependency array means it runs once after the component is mounted
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,6 +53,11 @@ export default function Signin() {
       setIsLoading(false);
     }
   };
+
+  // We don't render anything until we're on the client side
+  if (!isClient) {
+    return null; // Render nothing while waiting for client-side rendering
+  }
 
   return (
     <main className="min-h-screen p-4">
@@ -99,16 +109,6 @@ export default function Signin() {
         {errorMessage && <p className="mt-2 text-red-600">{errorMessage}</p>}
       </form>
 
-      <footer className="text-center mt-12">
-        <a href="mailto:techshack21@gmail.com">@techshack.co.uk</a> <br /> <br />
-        <a href="https://www.instagram.com/techshack_uk?igsh=MWZla3MwNDRraHZk">
-          <img src="/images/insta.jpg" alt="Tech Shack Instagram" />
-        </a>
-        <a href="https://www.facebook.com/profile.php?id=100092390929930">
-          <img src="/images/fb.jpg" alt="Tech Shack Facebook" />
-        </a>
-        <p>©2024 by Tech Shack</p>
-      </footer>
     </main>
   );
 }
