@@ -31,7 +31,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const res = await fetch('https://techshack-nextjs.vercel.app/api/signup', {
+      const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
