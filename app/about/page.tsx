@@ -27,7 +27,7 @@ const AboutPage = () => {
             <></>
           ) : (
             <>
-              <Link href="/signin">SIGN IN</Link> | <Link href="/register">REGISTER</Link>
+              <Link href="/signin">SIGN IN</Link> | <Link href="/signup">REGISTER</Link>
             </>
           )}
         </div>
