@@ -5,8 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Script from 'next/script';
 import { loadStripe } from '@stripe/stripe-js';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import type { Database } from '@/types/supabase'; // You must generate this via `supabase gen types typescript`
 
-const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); // Replace with real key in prod
+const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); // Use live key in prod
 
 type Service = {
   id: number;
@@ -14,25 +16,30 @@ type Service = {
   price: number;
 };
 
-const mockServices: Service[] = [
-  { id: 1, name: 'GENERAL ASSESSMENT', price: 20 },
-  { id: 2, name: 'GENERAL MAINTENANCE', price: 30 },
-  { id: 3, name: 'SCREEN REPAIR', price: 50 },
-];
-
 export default function BookingPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [bookingDate, setBookingDate] = useState('');
+  const [cardError, setCardError] = useState('');
   const [stripe, setStripe] = useState<any>(null);
   const [elements, setElements] = useState<any>(null);
   const [card, setCard] = useState<any>(null);
-  const [cardError, setCardError] = useState('');
-
-  const isAuthenticated = false;
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    setServices(mockServices);
+    const fetchServices = async () => {
+      const { data, error } = await supabase.from('services').select('*');
+      if (error) console.error('Error fetching services:', error);
+      else setServices(data || []);
+    };
+
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
+    };
+
+    fetchServices();
+    checkUser();
   }, []);
 
   useEffect(() => {
@@ -63,19 +70,30 @@ export default function BookingPage() {
       return;
     }
 
-    const bookingData = {
-      serviceId: selectedService.id,
-      bookingDate,
-    };
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    const res = await fetch('/api/booking', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bookingData),
-    });
+    if (userError || !user) {
+      alert('You must be signed in to book.');
+      return;
+    }
 
-    const data = await res.json();
-    console.log('Booking response:', data);
+    const { error } = await supabase.from('booking').insert([
+      {
+        user_id: user.id,
+        service_id: selectedService.id,
+        booking_date: bookingDate,
+      },
+    ]);
+
+    if (error) {
+      console.error('Booking error:', error);
+      alert('Booking failed.');
+    } else {
+      alert('Booking successful!');
+    }
   };
 
   const handlePaymentSubmit = async (e: React.FormEvent) => {
@@ -94,14 +112,12 @@ export default function BookingPage() {
 
   return (
     <main className="min-h-screen p-6">
-      {/* Logo */}
       <div className="logo mb-4 text-center">
         <Link href="/">
           <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
         </Link>
       </div>
 
-      {/* Auth Links */}
       <div className="auth-links text-center mb-6">
         {!isAuthenticated && (
           <>
@@ -113,7 +129,6 @@ export default function BookingPage() {
       <h1 className="text-3xl font-bold text-center mb-10">Book a Service</h1>
 
       <div className="max-w-xl mx-auto space-y-10">
-        {/* Payment Form */}
         <form onSubmit={handlePaymentSubmit} className="p-6 border rounded shadow">
           <h2 className="text-xl font-semibold mb-4">Payment</h2>
           <label htmlFor="card-element" className="block mb-2">Card Details</label>
@@ -122,7 +137,6 @@ export default function BookingPage() {
           <button type="submit" className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Submit Payment</button>
         </form>
 
-        {/* Booking Form */}
         <form onSubmit={handleBookingSubmit} className="p-6 border rounded shadow">
           <h2 className="text-xl font-semibold mb-4">Book a Service</h2>
           <label className="block mb-2">Select a Service:</label>
@@ -156,3 +170,4 @@ export default function BookingPage() {
     </main>
   );
 }
+
