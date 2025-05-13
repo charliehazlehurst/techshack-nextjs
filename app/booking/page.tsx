@@ -6,25 +6,30 @@ import Image from 'next/image';
 import Script from 'next/script';
 import { loadStripe } from '@stripe/stripe-js';
 
+const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); // Replace with real key in prod
 
-const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); // Replace with your real key in prod
+type Service = {
+  id: number;
+  name: string;
+  price: number;
+};
 
-const mockServices = [
+const mockServices: Service[] = [
   { id: 1, name: 'GENERAL ASSESSMENT', price: 20 },
   { id: 2, name: 'GENERAL MAINTENANCE', price: 30 },
   { id: 3, name: 'SCREEN REPAIR', price: 50 },
 ];
 
 export default function BookingPage() {
-  const [services, setServices] = useState([]);
-  const [selectedService, setSelectedService] = useState(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [bookingDate, setBookingDate] = useState('');
-  const [stripe, setStripe] = useState(null);
-  const [elements, setElements] = useState(null);
-  const [card, setCard] = useState(null);
+  const [stripe, setStripe] = useState<any>(null);
+  const [elements, setElements] = useState<any>(null);
+  const [card, setCard] = useState<any>(null);
   const [cardError, setCardError] = useState('');
 
-   const isAuthenticated = false;
+  const isAuthenticated = false;
 
   useEffect(() => {
     setServices(mockServices);
@@ -33,6 +38,7 @@ export default function BookingPage() {
   useEffect(() => {
     async function initStripe() {
       const stripeInstance = await stripePromise;
+      if (!stripeInstance) return;
       const elementsInstance = stripeInstance.elements();
       const cardElement = elementsInstance.create('card');
       cardElement.mount('#card-element');
@@ -43,14 +49,19 @@ export default function BookingPage() {
     initStripe();
   }, []);
 
-  const handleServiceChange = (e) => {
+  const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = parseInt(e.target.value);
-    const service = services.find((s) => s.id === id);
+    const service = services.find((s) => s.id === id) || null;
     setSelectedService(service);
   };
 
-  const handleBookingSubmit = async (e) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!selectedService || !bookingDate) {
+      alert('Please select a service and date.');
+      return;
+    }
 
     const bookingData = {
       serviceId: selectedService.id,
@@ -67,29 +78,31 @@ export default function BookingPage() {
     console.log('Booking response:', data);
   };
 
-  const handlePaymentSubmit = async (e) => {
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!stripe || !card) return;
 
     const { token, error } = await stripe.createToken(card);
     if (error) {
       setCardError(error.message);
     } else {
       console.log('Stripe Token:', token.id);
-      // Send token to your server here if needed
+      // You would send token.id to your backend to process the payment
     }
   };
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen p-6">
       {/* Logo */}
-      <div className="logo">
+      <div className="logo mb-4 text-center">
         <Link href="/">
           <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
         </Link>
       </div>
 
       {/* Auth Links */}
-      <div className="auth-links">
+      <div className="auth-links text-center mb-6">
         {!isAuthenticated && (
           <>
             <Link href="/signin">SIGN IN</Link> | <Link href="/signup">REGISTER</Link>
@@ -113,10 +126,12 @@ export default function BookingPage() {
         <form onSubmit={handleBookingSubmit} className="p-6 border rounded shadow">
           <h2 className="text-xl font-semibold mb-4">Book a Service</h2>
           <label className="block mb-2">Select a Service:</label>
-          <select onChange={handleServiceChange} className="w-full p-2 mb-4 border rounded">
-            <option>Select a service</option>
+          <select onChange={handleServiceChange} className="w-full p-2 mb-4 border rounded" required>
+            <option value="">Select a service</option>
             {services.map((service) => (
-              <option key={service.id} value={service.id}>{service.name}</option>
+              <option key={service.id} value={service.id}>
+                {service.name}
+              </option>
             ))}
           </select>
 
@@ -130,13 +145,13 @@ export default function BookingPage() {
             className="w-full p-2 border rounded mb-4"
             value={bookingDate}
             onChange={(e) => setBookingDate(e.target.value)}
+            required
           />
 
           <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Book Now</button>
         </form>
       </div>
 
-      {/* Stripe Script */}
       <Script src="https://js.stripe.com/v3/" strategy="beforeInteractive" />
     </main>
   );
