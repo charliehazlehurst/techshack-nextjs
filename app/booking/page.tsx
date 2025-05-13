@@ -5,8 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Script from 'next/script';
 import { loadStripe } from '@stripe/stripe-js';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Database } from '@/types/supabase'; // You must generate this via `supabase gen types typescript`
+import { createBrowserClient } from '@supabase/ssr'; // correct modern helper
+import { type SupabaseClient } from '@supabase/supabase-js';
+
 
 const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); // Use live key in prod
 
@@ -25,6 +26,12 @@ export default function BookingPage() {
   const [elements, setElements] = useState<any>(null);
   const [card, setCard] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [supabase] = useState<SupabaseClient>(() =>
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  );
 
   useEffect(() => {
     const fetchServices = async () => {
