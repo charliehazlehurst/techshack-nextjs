@@ -4,6 +4,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+type Review = {
+  userName: string;
+  userReview: string;
+};
+
 export default function ReviewsPage() {
   const [userName, setUserName] = useState('');
   const [userReview, setUserReview] = useState('');
