@@ -12,7 +12,7 @@ type Review = {
 export default function ReviewsPage() {
   const [userName, setUserName] = useState('');
   const [userReview, setUserReview] = useState('');
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Simulated session/auth state (replace with actual logic)
@@ -25,7 +25,13 @@ export default function ReviewsPage() {
   useEffect(() => {
     fetch('/api/reviews')
       .then(res => res.json())
-      .then(data => setReviews(data))
+      .then(data => {
+        const normalized = data.map((review: any) => ({
+          userName: review.user_name,
+          userReview: review.user_review,
+        }));
+        setReviews(normalized);
+      })
       .catch(err => console.error('Failed to fetch reviews:', err));
   }, []);
 
@@ -37,12 +43,18 @@ export default function ReviewsPage() {
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userName, userReview }),
+        body: JSON.stringify({ user_name: userName, user_review: userReview }),
       });
 
       if (res.ok) {
         const newReview = await res.json();
-        setReviews(prev => [...prev, newReview]);
+        setReviews(prev => [
+          ...prev,
+          {
+            userName: newReview.user_name,
+            userReview: newReview.user_review,
+          },
+        ]);
         setUserName('');
         setUserReview('');
       } else {
@@ -111,8 +123,6 @@ export default function ReviewsPage() {
         {reviews.length > 0 ? (
           reviews.map((review, index) => (
             <div key={index} className="mb-4 border-b pb-2">
-              {/* If profile pictures are stored, include this: */}
-              {/* <img src={review.profilePicture} alt="Profile" className="inline w-8 h-8 rounded-full mr-2" /> */}
               <p><strong>{review.userName}:</strong> {review.userReview}</p>
             </div>
           ))
@@ -120,7 +130,7 @@ export default function ReviewsPage() {
           <p className="text-center">No reviews yet.</p>
         )}
       </div>
-
     </main>
   );
 }
+

@@ -15,7 +15,6 @@ type NewReview = {
   user_review: string;
 };
 
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabase = createServerClient(
     process.env.SUPABASE_URL!,
@@ -58,15 +57,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const { data, error } = await supabase
-  .from('reviews')
-  .insert<NewReview>([
-    {
-      user_name,
-      user_review,
-      id: session.user.id,
-    },
-  ])
-  .select();
+      .from('reviews')
+      .insert<NewReview>([
+        {
+          user_name,
+          user_review,
+          id: session.user.id,
+        },
+      ])
+      .select();
 
     if (error || !data || data.length === 0) {
       return res.status(500).json({ error: error?.message || 'Insert failed' });
@@ -77,4 +76,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
-
