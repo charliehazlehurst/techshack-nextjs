@@ -19,7 +19,7 @@ export default function Signin() {
     }
 
     setIsLoading(true);
-    setErrorMessage(''); // Reset error message before making the request
+    setErrorMessage('');
 
     try {
       const res = await fetch('/api/signin', {
@@ -33,11 +33,11 @@ export default function Signin() {
       if (res.ok) {
         console.log('[SIGNIN] Success:', data);
 
-        // Store session data for logged-in state
-        sessionStorage.setItem('authenticated', 'true');
+        // Store session data for logged-in state in localStorage
+        localStorage.setItem('authenticated', 'true');
 
         // Redirect to homepage after successful sign-in
-        router.push('/'); // This ensures client-side navigation
+        router.push('/');
       } else {
         console.warn('[SIGNIN] Failed:', data.error);
         setErrorMessage(data.error || 'An error occurred. Please try again.');
@@ -90,3 +90,4 @@ export default function Signin() {
     </main>
   );
 }
+
