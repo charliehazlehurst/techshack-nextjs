@@ -1,9 +1,10 @@
 'use client';
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
+
 
 export default function Home() {
   const pathname = usePathname();
