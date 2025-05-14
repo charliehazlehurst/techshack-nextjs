@@ -27,7 +27,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body>
-        <Navbar isAuthenticated={false} /> {/* Change this to true when logged in */}
+        <Navbar /> 
         {children}
         <Footer />
       </body>
