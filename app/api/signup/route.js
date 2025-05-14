@@ -6,6 +6,7 @@ export async function POST(req) {
   const body = await req.json();
   const { username, email, password } = body;
 
+  // Basic validation
   if (!username || !email || !password) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
@@ -19,50 +20,41 @@ export async function POST(req) {
   }
 
   try {
-    // Step 1: Create user in auth system
-    const { user, error: authError } = await supabase.auth.signUp({
+    // Step 1: Create user in Supabase Auth
+    const { data: signUpData, error: authError } = await supabase.auth.signUp({
       email,
       password,
     });
 
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 500 });
+    if (authError || !signUpData.user) {
+      console.error('Auth error:', authError);
+      return NextResponse.json({ error: 'Failed to create auth user.' }, { status: 500 });
     }
 
-    // Step 2: Check if email already exists in custom `users` table
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .single();
+    const authUserId = signUpData.user.id;
 
-    if (existingUser) {
-      return NextResponse.json({ error: 'Email already in use.' }, { status: 409 });
-    }
-
-    // Step 3: Hash password
+    // Step 2: Hash password (for internal users table if needed)
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Step 4: Insert into `users` table
+    // Step 3: Insert user into your `users` table
     const { error: insertError } = await supabase
       .from('users')
       .insert([{
         username,
         email,
         password: hashedPassword,
-        auth_user_id: user.id,  // Use the `user.id` from `auth.users`
+        auth_user_id: authUserId, // This should match the FK to auth.users
       }]);
 
     if (insertError) {
+      console.error('Insert error:', insertError);
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 
-    // Return success response
     return NextResponse.json({ message: 'User registered successfully!' }, { status: 201 });
   } catch (err) {
-    console.error('Signup error:', err);
-    return NextResponse.json({ error: 'An error occurred during signup.' }, { status: 500 });
+    console.error('Unexpected signup error:', err);
+    return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
 }
-
