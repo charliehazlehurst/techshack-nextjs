@@ -2,15 +2,26 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-interface NavbarProps {
-  isAuthenticated?: boolean;
-}
-
-const Navbar: React.FC<NavbarProps> = ({ isAuthenticated = false }) => {
+const Navbar: React.FC = () => {
   const pathname = usePathname();
-  const [authenticated, setAuthenticated] = useState(isAuthenticated);
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // On mount, check auth status from localStorage (or cookies/session)
+    const token = localStorage.getItem('authToken');
+    setAuthenticated(!!token);
+  }, []);
+
+  const handleSignOut = () => {
+    // Clear auth data (example: localStorage)
+    localStorage.removeItem('authToken');
+    setAuthenticated(false);
+
+    // Optional: redirect to home or sign-in page
+    window.location.href = '/';
+  };
 
   const navItems = [
     { href: '/', label: 'HOME' },
@@ -20,11 +31,6 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated = false }) => {
     { href: '/reviews', label: 'REVIEWS' },
     { href: '/contact', label: 'CONTACT US' },
   ];
-
-  const handleSignOut = () => {
-    // Logic to handle user sign-out, e.g., clearing authentication data from localStorage, cookies, etc.
-    setAuthenticated(false);
-  };
 
   return (
     <nav className="w-full flex flex-wrap justify-center gap-4 text-lg font-semibold p-4 bg-white z-50 shadow-md">
@@ -82,5 +88,6 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated = false }) => {
 };
 
 export default Navbar;
+
 
 
