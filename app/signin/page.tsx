@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/compat/router';
+import { useRouter } from 'next/router';
 
 export default function Signin() {
   const [email, setEmail] = useState('');
