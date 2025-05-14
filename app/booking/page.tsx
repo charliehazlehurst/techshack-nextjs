@@ -5,11 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Script from 'next/script';
 import { loadStripe } from '@stripe/stripe-js';
-import { createBrowserClient } from '@supabase/ssr'; // correct modern helper
+import { createBrowserClient } from '@supabase/ssr';
 import { type SupabaseClient } from '@supabase/supabase-js';
 
-
-const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); // Use live key in prod
+const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); // Replace with live key in production
 
 type Service = {
   id: number;
@@ -26,27 +25,27 @@ export default function BookingPage() {
   const [elements, setElements] = useState<any>(null);
   const [card, setCard] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [supabase] = useState<SupabaseClient>(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-  );
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   useEffect(() => {
-    const fetchServices = async () => {
-      const { data, error } = await supabase.from('services').select('*');
+    const supabaseClient = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    setSupabase(supabaseClient);
+
+    const fetchData = async () => {
+      const { data, error } = await supabaseClient.from('services').select('*');
       if (error) console.error('Error fetching services:', error);
       else setServices(data || []);
-    };
 
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabaseClient.auth.getUser();
       setIsAuthenticated(!!user);
     };
 
-    fetchServices();
-    checkUser();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -71,6 +70,7 @@ export default function BookingPage() {
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) return;
 
     if (!selectedService || !bookingDate) {
       alert('Please select a service and date.');
@@ -113,7 +113,7 @@ export default function BookingPage() {
       setCardError(error.message);
     } else {
       console.log('Stripe Token:', token.id);
-      // You would send token.id to your backend to process the payment
+      // Send token.id to your backend for processing
     }
   };
 
@@ -177,4 +177,3 @@ export default function BookingPage() {
     </main>
   );
 }
-
