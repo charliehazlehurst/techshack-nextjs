@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-
 const services = [
   {
     title: "GENERAL ASSESSMENT",
@@ -32,22 +31,22 @@ const services = [
   {
     title: "DATA RECOVERY",
     price: "£25 per Device",
-    description: "Need to recover data from a broken device? Book this service to restore all of your valuable pictures, etc.",
+    description:
+      "Need to recover data from a broken device? Book this service to restore all of your valuable pictures, etc.",
     imgSrc: "/images/data.jpg",
     altText: "DATA RECOVERY",
   },
   {
     title: "VIRUS REMOVAL",
     price: "£50 per Device",
-    description: "Need to remove viruses from a compromised device? Book this service to remove viruses.",
+    description:
+      "Need to remove viruses from a compromised device? Book this service to remove viruses.",
     imgSrc: "/images/virus.jpg",
     altText: "VIRUS REMOVAL",
   },
 ];
 
 export default function Services() {
-  const isAuthenticated = false; // Placeholder for authentication logic
-
   return (
     <main className="min-h-screen">
       {/* Logo */}
@@ -55,15 +54,6 @@ export default function Services() {
         <Link href="/">
           <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
         </Link>
-      </div>
-
-      {/* Auth Links */}
-      <div className="auth-links text-center mb-4">
-        {!isAuthenticated && (
-          <>
-            <Link href="/signin" className="mr-2">SIGN IN</Link> | <Link href="/signup" className="ml-2">REGISTER</Link>
-          </>
-        )}
       </div>
 
       {/* Services Header */}

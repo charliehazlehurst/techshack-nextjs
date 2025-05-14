@@ -4,20 +4,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const session = sessionStorage.getItem('authenticated');
-    setIsLoggedIn(session === 'true');
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +26,7 @@ export default function RegisterPage() {
         body: JSON.stringify({ username, email, password }),
       });
 
-      const text = await res.text(); // Read response as plain text first
+      const text = await res.text();
 
       if (!res.ok) {
         console.error('Error response:', text);
@@ -58,24 +49,17 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen p-4">
+      {/* Logo */}
       <div className="logo py-4 text-center">
         <Link href="/">
           <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
         </Link>
       </div>
 
-      <div className="auth-links text-center mb-4">
-        {isLoggedIn ? (
-          <Link href="/my_account">MY ACCOUNT</Link>
-        ) : (
-          <>
-            <Link href="/signin">SIGN IN</Link> | <span className="font-bold">REGISTER</span>
-          </>
-        )}
-      </div>
-
+      {/* Page Title */}
       <h1 className="text-center text-3xl font-bold mb-6">REGISTER</h1>
 
+      {/* Registration Form */}
       <form onSubmit={handleSubmit} className="max-w-md mx-auto text-center space-y-4">
         <input
           type="text"

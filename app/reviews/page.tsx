@@ -13,13 +13,6 @@ export default function ReviewsPage() {
   const [userName, setUserName] = useState('');
   const [userReview, setUserReview] = useState('');
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // Simulated session/auth state (replace with actual logic)
-  useEffect(() => {
-    const session = sessionStorage.getItem('authenticated');
-    setIsLoggedIn(session === 'true');
-  }, []);
 
   // Fetch reviews on load
   useEffect(() => {
@@ -72,17 +65,6 @@ export default function ReviewsPage() {
         <Link href="/">
           <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
         </Link>
-      </div>
-
-      {/* Auth Links */}
-      <div className="auth-links text-center mb-4">
-        {isLoggedIn ? (
-          <Link href="/my_account">MY ACCOUNT</Link>
-        ) : (
-          <>
-            <Link href="/signin">SIGN IN</Link> | <Link href="/signup">REGISTER</Link>
-          </>
-        )}
       </div>
 
       <h1 className="text-center text-3xl font-bold mb-6">SUBMIT A REVIEW BELOW!</h1>

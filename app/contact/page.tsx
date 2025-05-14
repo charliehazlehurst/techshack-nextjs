@@ -57,7 +57,6 @@ export default function Contact() {
     e.preventDefault();
 
     if (validateForm()) {
-      // Simulating form submission to a backend or email service
       try {
         const response = await fetch('/api/contact', {
           method: 'POST',
@@ -68,7 +67,6 @@ export default function Contact() {
         });
 
         if (response.ok) {
-          // On success, redirect or show a success message
           alert('Message sent successfully!');
         } else {
           alert('Failed to send message');
@@ -86,12 +84,6 @@ export default function Contact() {
         <Link href="/">
           <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
         </Link>
-      </div>
-
-      {/* Auth Links */}
-      <div className="auth-links text-center mb-4">
-        {/* Replace with proper authentication handling */}
-        <Link href="/signin">SIGN IN</Link> | <Link href="/signup">REGISTER</Link>
       </div>
 
       {/* Form Section */}
@@ -155,7 +147,15 @@ export default function Contact() {
       </form>
 
       {/* Google Map */}
-<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d152269.56130959318!2d-3.0833951101175288!3d53.393149338403425!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487adf8a647060b7%3A0x42dc046f3f176e01!2sLiverpool!5e0!3m2!1sen!2suk!4v1747068245608!5m2!1sen!2suk" width="100%" height="450" style={{border:0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d152269.56130959318!2d-3.0833951101175288!3d53.393149338403425!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487adf8a647060b7%3A0x42dc046f3f176e01!2sLiverpool!5e0!3m2!1sen!2suk!4v1747068245608!5m2!1sen!2suk"
+        width="100%"
+        height="450"
+        style={{ border: 0 }}
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      ></iframe>
 
       {/* Opening Hours */}
       <h1 className="text-center text-2xl font-bold my-8">OPENING HOURS</h1>
@@ -164,8 +164,8 @@ export default function Contact() {
         Sat: 8am - 5pm <br />
         Sun: 8am - 5pm
       </p>
-
     </main>
   );
 }
+
 

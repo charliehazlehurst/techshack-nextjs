@@ -47,18 +47,17 @@ export default function Signin() {
 
   return (
     <main className="min-h-screen p-4">
+      {/* Logo */}
       <div className="logo py-4 text-center">
         <a href="/">
           <img src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
         </a>
       </div>
 
-      <div className="auth-links text-center mb-4">
-        <span className="font-bold">SIGN IN</span> | <a href="/signup">REGISTER</a>
-      </div>
-
+      {/* Page Title */}
       <h1 className="text-center text-3xl font-bold mb-6">SIGN IN</h1>
 
+      {/* Sign In Form */}
       <form onSubmit={handleSubmit} className="max-w-md mx-auto text-center space-y-4">
         <input
           type="email"
