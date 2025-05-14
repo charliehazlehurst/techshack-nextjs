@@ -8,7 +8,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { createBrowserClient } from '@supabase/ssr';
 import { type SupabaseClient } from '@supabase/supabase-js';
 
-const stripePromise = loadStripe('pk_test_faomnoqjqwksuskjstum'); // Replace with live key in production
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 type Service = {
   id: number;
