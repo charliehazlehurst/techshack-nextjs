@@ -1,16 +1,17 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
 
 const Navbar: React.FC = () => {
-  const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    // Retrieve 'authenticated' flag from sessionStorage
+    const token = sessionStorage.getItem('authenticated');
     setIsAuthenticated(!!token);
     setHasMounted(true);
   }, []);
@@ -25,8 +26,8 @@ const Navbar: React.FC = () => {
   ];
 
   const handleSignOut = () => {
-    localStorage.removeItem('authToken'); // Clear the token
-    setIsAuthenticated(false);
+    sessionStorage.removeItem('authenticated'); // Clear the session
+    setIsAuthenticated(false); // Update the state to reflect logged-out status
   };
 
   return (

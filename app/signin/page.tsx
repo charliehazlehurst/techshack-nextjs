@@ -19,7 +19,7 @@ export default function Signin() {
     }
 
     setIsLoading(true);
-    setErrorMessage('');
+    setErrorMessage(''); // Reset error message before making the request
 
     try {
       const res = await fetch('/api/signin', {
@@ -32,7 +32,12 @@ export default function Signin() {
 
       if (res.ok) {
         console.log('[SIGNIN] Success:', data);
-        router.push('/');
+
+        // Store session data for logged-in state
+        sessionStorage.setItem('authenticated', 'true');
+
+        // Redirect to homepage after successful sign-in
+        router.push('/'); // This ensures client-side navigation
       } else {
         console.warn('[SIGNIN] Failed:', data.error);
         setErrorMessage(data.error || 'An error occurred. Please try again.');
@@ -47,17 +52,14 @@ export default function Signin() {
 
   return (
     <main className="min-h-screen p-4">
-      {/* Logo */}
       <div className="logo py-4 text-center">
         <a href="/">
           <img src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
         </a>
       </div>
 
-      {/* Page Title */}
       <h1 className="text-center text-3xl font-bold mb-6">SIGN IN</h1>
 
-      {/* Sign In Form */}
       <form onSubmit={handleSubmit} className="max-w-md mx-auto text-center space-y-4">
         <input
           type="email"
