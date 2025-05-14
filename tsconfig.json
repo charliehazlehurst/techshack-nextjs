@@ -34,7 +34,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "pages/api/signup.js"  ],
   "exclude": [
     "node_modules"
   ]

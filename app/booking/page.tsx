@@ -35,7 +35,7 @@ export default function BookingPage() {
     setSupabase(supabaseClient);
 
     const fetchData = async () => {
-      const { data, error } = await supabaseClient.from('services').select('*');
+      const { data, error } = await supabaseClient.from('booking').select('*');
       if (error) console.error('Error fetching services:', error);
       else setServices(data || []);
 
