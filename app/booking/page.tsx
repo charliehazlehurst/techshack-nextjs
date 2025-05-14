@@ -11,7 +11,7 @@ import { type SupabaseClient } from '@supabase/supabase-js';
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 type Service = {
-  id: number;
+  id: string;  // Change to string to match the ID from Stripe
   name: string;
   price: number;
 };
@@ -34,11 +34,19 @@ export default function BookingPage() {
     );
     setSupabase(supabaseClient);
 
+    // Fetch services from Stripe
+    const fetchServices = async () => {
+      const response = await fetch('/api/stripe-products');
+      const data = await response.json();
+      setServices(data); // Assuming this returns the correct product data from the backend
+    };
+
+    fetchServices();
+
     const fetchData = async () => {
       const { data, error } = await supabaseClient.from('booking').select('*');
       if (error) console.error('Error fetching services:', error);
-      else setServices(data || []);
-
+      
       const {
         data: { user },
       } = await supabaseClient.auth.getUser();
@@ -63,7 +71,7 @@ export default function BookingPage() {
   }, []);
 
   const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = parseInt(e.target.value);
+    const id = e.target.value;
     const service = services.find((s) => s.id === id) || null;
     setSelectedService(service);
   };
@@ -87,13 +95,11 @@ export default function BookingPage() {
       return;
     }
 
-    const { error } = await supabase.from('booking').insert([
-      {
-        user_id: user.id,
-        service_id: selectedService.id,
-        booking_date: bookingDate,
-      },
-    ]);
+    const { error } = await supabase.from('booking').insert([{
+      user_id: user.id,
+      service_id: selectedService.id,
+      booking_date: bookingDate,
+    }]);
 
     if (error) {
       console.error('Booking error:', error);
@@ -112,8 +118,20 @@ export default function BookingPage() {
     if (error) {
       setCardError(error.message);
     } else {
-      console.log('Stripe Token:', token.id);
-      // Send token.id to your backend for processing
+      // Send token.id to the backend to charge the customer
+      const response = await fetch('/api/charge', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: token.id, amount: selectedService?.price * 100 }), // Amount in cents
+      });
+      const result = await response.json();
+      if (result.error) {
+        setCardError(result.error);
+      } else {
+        alert('Payment Successful!');
+      }
     }
   };
 
@@ -177,3 +195,4 @@ export default function BookingPage() {
     </main>
   );
 }
+
