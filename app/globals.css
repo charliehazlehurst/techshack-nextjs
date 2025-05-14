@@ -194,3 +194,32 @@ input[type="submit"]:hover,
   color: black;
 }
 
+/* MOBILE FIXES */
+
+/* For Mobile */
+@media (max-width: 768px) {
+  .auth-links {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 10px;
+  }
+
+  .auth-links a {
+    padding: 8px 12px;
+    text-align: right;
+  }
+
+  /* Adjust Navbar for mobile */
+  nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  nav a {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+
