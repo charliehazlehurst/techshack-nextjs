@@ -1,6 +1,5 @@
-// /pages/api/signin.js
-
-import supabase from '../../lib/supabase';
+// pages/api/signin.js
+import supabase from '/lib/supabase.js';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
@@ -10,18 +9,11 @@ export default async function handler(req, res) {
 
   const { email, password } = req.body;
 
-  // Basic validation
-  if (
-    !email ||
-    !password ||
-    typeof email !== 'string' ||
-    typeof password !== 'string'
-  ) {
+  if (!email || !password) {
     return res.status(400).json({ error: 'Please provide both email and password.' });
   }
 
   try {
-    // Fetch the user by email
     const { data: user, error } = await supabase
       .from('users')
       .select('id, username, email, password')
@@ -32,14 +24,13 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    // Compare the provided password with the hashed password
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    // Auth successful
+    // Simulate a session - You could generate a JWT here if needed
     return res.status(200).json({
       message: 'Login successful',
       user: {
@@ -53,3 +44,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'An internal server error occurred.' });
   }
 }
+

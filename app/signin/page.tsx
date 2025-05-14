@@ -1,28 +1,26 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/compat/router'; // Import from 'next/compat/router' for pages directory
+import { useRouter } from 'next/compat/router';
 
 export default function Signin() {
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  const [isClient, setIsClient] = useState(false); // Track if component is mounted on the client
-  const router = useRouter(); // This will now work because it's called inside the functional component
+  const router = useRouter();
 
   useEffect(() => {
-    setIsClient(true); // Set this flag when the component mounts in the client
-  }, []); // Empty dependency array means it runs once after the component is mounted
+    setIsClient(true);
+  }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic form validation (optional, can be extended)
-    if (!username || !email || !password) {
-      setErrorMessage('Please fill in all fields.');
+    if (!email || !password) {
+      setErrorMessage('Please enter both email and password.');
       return;
     }
 
@@ -30,34 +28,32 @@ export default function Signin() {
     setErrorMessage('');
 
     try {
-      const res = await fetch('/api/signin', { // Replace with your backend API endpoint
+      const res = await fetch('/api/signin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        // Redirect to home page or user account page after successful sign-in
-        router.push('/'); // Change '/my_account' if you want to redirect to user account page
+        // Store user info in localStorage
+        localStorage.setItem('user', JSON.stringify(data.user));
+        router.push('/');
       } else {
-        setErrorMessage(data.error || 'An error occurred. Please try again.');
+        setErrorMessage(data.error || 'Invalid credentials. Please try again.');
       }
     } catch (error) {
       console.error('Sign-in error:', error);
-      setErrorMessage('An error occurred. Please try again.');
+      setErrorMessage('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // We don't render anything until we're on the client side
-  if (!isClient) {
-    return null; // Render nothing while waiting for client-side rendering
-  }
+  if (!isClient) return null;
 
   return (
     <main className="min-h-screen p-4">
@@ -74,14 +70,6 @@ export default function Signin() {
       <h1 className="text-center text-3xl font-bold mb-6">SIGN IN</h1>
 
       <form onSubmit={handleSubmit} className="max-w-md mx-auto text-center space-y-4">
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          className="w-full p-2 border rounded"
-        />
         <input
           type="email"
           placeholder="Email"
@@ -100,7 +88,9 @@ export default function Signin() {
         />
         <button
           type="submit"
-          className={`bg-blue-600 text-white px-4 py-2 rounded ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`bg-blue-600 text-white px-4 py-2 rounded ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
           disabled={isLoading}
         >
           {isLoading ? 'Signing in...' : 'Sign In'}
@@ -108,7 +98,6 @@ export default function Signin() {
 
         {errorMessage && <p className="mt-2 text-red-600">{errorMessage}</p>}
       </form>
-
     </main>
   );
 }
