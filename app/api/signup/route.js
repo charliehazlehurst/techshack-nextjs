@@ -6,7 +6,6 @@ export async function POST(req) {
   const body = await req.json();
   const { username, email, password } = body;
 
-  // Basic validation
   if (!username || !email || !password) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
@@ -20,41 +19,30 @@ export async function POST(req) {
   }
 
   try {
-    // Step 1: Create user in Supabase Auth
-    const { data: signUpData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
 
-    if (authError || !signUpData.user) {
-      console.error('Auth error:', authError);
-      return NextResponse.json({ error: 'Failed to create auth user.' }, { status: 500 });
+    if (existingUser) {
+      return NextResponse.json({ error: 'Email already in use.' }, { status: 409 });
     }
 
-    const authUserId = signUpData.user.id;
-
-    // Step 2: Hash password (for internal users table if needed)
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Step 3: Insert user into your `users` table
     const { error: insertError } = await supabase
       .from('users')
-      .insert([{
-        username,
-        email,
-        password: hashedPassword,
-        auth_user_id: authUserId, // This should match the FK to auth.users
-      }]);
+      .insert([{ username, email, password: hashedPassword }]);
 
     if (insertError) {
-      console.error('Insert error:', insertError);
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'User registered successfully!' }, { status: 201 });
   } catch (err) {
-    console.error('Unexpected signup error:', err);
-    return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
+    console.error('Signup error:', err);
+    return NextResponse.json({ error: 'An error occurred during signup.' }, { status: 500 });
   }
 }
