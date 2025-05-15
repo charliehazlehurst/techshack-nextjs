@@ -1,18 +1,30 @@
 'use client';
-import { SpeedInsights } from "@vercel/speed-insights/next"
+
+import { useEffect, useState } from 'react';
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 
-
 export default function Home() {
-  const pathname = usePathname();
+  const [signOutMessage, setSignOutMessage] = useState('');
+
+  useEffect(() => {
+    const message = localStorage.getItem('signedOutMessage');
+    if (message) {
+      setSignOutMessage(message);
+      localStorage.removeItem('signedOutMessage');
+    }
+  }, []);
 
   return (
     <main className="min-h-screen">
-      {/* Shared Logo + Auth Links */}
       <Header />
+
+      {signOutMessage && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 mx-4 mt-4 rounded text-center">
+          {signOutMessage}
+        </div>
+      )}
 
       {/* Hero Section */}
       <div
@@ -56,4 +68,5 @@ export default function Home() {
     </main>
   );
 }
+
 
