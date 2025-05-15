@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import supabase from '@/lib/supabase.js';
+import supabase from '/lib/supabase.js';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
