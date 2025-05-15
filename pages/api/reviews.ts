@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // Use service role key here for privileged operations
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -23,7 +23,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
-    // Verify token and get user
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -42,8 +41,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           user_name,
           user_review,
           rating,
-          // Optionally link review to user ID if you want:
-          // user_id: user.id,
         },
       ])
       .select();
@@ -57,6 +54,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
+
+
 
 
 
