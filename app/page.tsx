@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import Image from 'next/image';
+import Link from 'next/link';
 import Header from '@/components/Header';
 
 export default function Home() {
