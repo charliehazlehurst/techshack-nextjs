@@ -2,25 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { createServerClient } from '@supabase/ssr';
 import { type CookieOptions } from '@supabase/ssr';
 
-type Review = {
-  id: string;
-  user_name: string;
-  user_review: string;
-  rating: number;
-  created_at: string;
-};
-
-type NewReview = {
-  id: string;
-  user_name: string;
-  user_review: string;
-  rating: number;
-};
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabase = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       cookies: {
         get(name: string) {
@@ -55,23 +40,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const { user_name, user_review, rating } = req.body;
 
-    if (!user_name || !user_review || !rating) {
-      return res.status(400).json({ error: 'Missing fields' });
+    if (!user_name || !user_review || typeof rating !== 'number') {
+      return res.status(400).json({ error: 'Missing or invalid fields' });
     }
 
-    if (typeof rating !== 'number' || rating < 1 || rating > 5) {
-      return res.status(400).json({ error: 'Rating must be an integer between 1 and 5' });
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
     }
 
     const { data, error } = await supabase
       .from('reviews')
-      .insert<NewReview>([
-        {
-          user_name,
-          user_review,
-          rating,
-          id: session.user.id,
-        },
+      .insert([
+        { user_name, user_review, rating }
       ])
       .select();
 
@@ -82,6 +62,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(201).json(data[0]);
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  // Default fallback for unsupported HTTP methods
+  res.setHeader('Allow', ['GET', 'POST']);
+  return res.status(405).end(`Method ${req.method} Not Allowed`);
 }
 
