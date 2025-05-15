@@ -5,7 +5,7 @@ import { type CookieOptions } from '@supabase/ssr';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
@@ -50,9 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const { data, error } = await supabase
       .from('reviews')
-      .insert([
-        { user_name, user_review, rating }
-      ])
+      .insert([{ user_name, user_review, rating }])
       .select();
 
     if (error || !data || data.length === 0) {
@@ -62,8 +60,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(201).json(data[0]);
   }
 
-  // Default fallback for unsupported HTTP methods
   res.setHeader('Allow', ['GET', 'POST']);
   return res.status(405).end(`Method ${req.method} Not Allowed`);
 }
+
 
