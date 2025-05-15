@@ -80,7 +80,7 @@ export default function MyAccount() {
       if (newEmail || newPassword) {
         toast('Logging out for security...');
         setTimeout(() => {
-          router.push('/login'); // Or use logout logic if you have one
+          router.push('/signin'); // Or use logout logic if you have one
         }, 1500);
       }
     } else {
