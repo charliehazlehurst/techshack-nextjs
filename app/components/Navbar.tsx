@@ -11,21 +11,9 @@ const Navbar: React.FC = () => {
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('authenticated');
-      setIsAuthenticated(!!token);
-      setHasMounted(true);
-    };
-
-    checkAuth();
-
-    const handleAuthChange = () => checkAuth();
-
-    window.addEventListener('authChanged', handleAuthChange);
-
-    return () => {
-      window.removeEventListener('authChanged', handleAuthChange);
-    };
+    const token = localStorage.getItem('authenticated');
+    setIsAuthenticated(!!token);
+    setHasMounted(true);
   }, []);
 
   const navItems = [
@@ -38,12 +26,11 @@ const Navbar: React.FC = () => {
   ];
 
   const handleSignOut = () => {
-    localStorage.removeItem('authenticated');
-    localStorage.setItem('signedOutMessage', 'You have been signed out.');
-    window.dispatchEvent(new Event('authChanged'));
-    setIsAuthenticated(false);
-    router.push('/');
-  };
+  localStorage.removeItem('authenticated');
+  localStorage.setItem('signedOutMessage', 'You have been signed out.');
+  setIsAuthenticated(false);
+  router.push('/');
+};
 
   return (
     <nav className="w-full flex flex-wrap justify-center gap-4 text-lg font-semibold p-4 bg-white z-50 shadow-md">
@@ -103,7 +90,6 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
-
 
 
 
