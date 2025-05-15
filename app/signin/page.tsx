@@ -31,14 +31,14 @@ export default function Signin() {
       const data = await res.json();
 
       if (res.ok) {
-        console.log('[SIGNIN] Success:', data);
+  console.log('[SIGNIN] Success:', data);
 
-        // Store session data for logged-in state in localStorage
-        localStorage.setItem('authenticated', 'true');
+  sessionStorage.setItem('authenticated', 'true');
+  localStorage.setItem('authenticated', 'true');
+  window.dispatchEvent(new Event('authChanged')); // ✅ Notify Navbar
 
-        // Redirect to homepage after successful sign-in
-        router.push('/');
-      } else {
+  router.push('/');
+} else {
         console.warn('[SIGNIN] Failed:', data.error);
         setErrorMessage(data.error || 'An error occurred. Please try again.');
       }
