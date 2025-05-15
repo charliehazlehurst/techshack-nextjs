@@ -1,30 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createServerClient } from '@supabase/ssr';
-import { type CookieOptions } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY! // Use service role key here for privileged operations
+);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return req.cookies[name];
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          res.setHeader('Set-Cookie', `${name}=${value}; Path=/; HttpOnly`);
-        },
-        remove(name: string, options: CookieOptions) {
-          res.setHeader('Set-Cookie', `${name}=; Path=/; Max-Age=0`);
-        },
-      },
-    }
-  );
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
   if (req.method === 'GET') {
     const { data, error } = await supabase
       .from('reviews')
@@ -36,21 +18,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === 'POST') {
-    if (!session) return res.status(401).json({ error: 'Unauthorized' });
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1] || '';
+
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+    // Verify token and get user
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     const { user_name, user_review, rating } = req.body;
 
-    if (!user_name || !user_review || typeof rating !== 'number') {
-      return res.status(400).json({ error: 'Missing or invalid fields' });
-    }
-
-    if (rating < 1 || rating > 5) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+    if (!user_name || !user_review || !rating) {
+      return res.status(400).json({ error: 'Missing fields' });
     }
 
     const { data, error } = await supabase
       .from('reviews')
-      .insert([{ user_name, user_review, rating }])
+      .insert([
+        {
+          user_name,
+          user_review,
+          rating,
+          // Optionally link review to user ID if you want:
+          // user_id: user.id,
+        },
+      ])
       .select();
 
     if (error || !data || data.length === 0) {
@@ -60,8 +55,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(201).json(data[0]);
   }
 
-  res.setHeader('Allow', ['GET', 'POST']);
-  return res.status(405).end(`Method ${req.method} Not Allowed`);
+  return res.status(405).json({ error: 'Method not allowed' });
 }
+
 
 
