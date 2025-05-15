@@ -2,10 +2,11 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
-import { AuthProvider } from '@/components/auth-context';
-import { Analytics } from "@vercel/analytics/next"
+import { AuthProvider } from '@/components/auth-context'
+import { Toaster } from 'react-hot-toast'
 
 export const metadata: Metadata = {
   title: 'Tech Shack',
@@ -28,9 +29,14 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body>
-        <Navbar /> 
-        {children}
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          <Toaster position="top-center" />
+          {children}
+          <Footer />
+        </AuthProvider>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   )
