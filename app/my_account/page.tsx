@@ -1,39 +1,33 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'react-hot-toast';
 
 export default function MyAccount() {
   const [stage, setStage] = useState<'verify' | 'update'>('verify');
   const [currentEmail, setCurrentEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
-  const [userId, setUserId] = useState<string | null>(null);
 
+  // For update stage
   const [newUsername, setNewUsername] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [confirming, setConfirming] = useState(false);
-
-  const router = useRouter();
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
+    setLoading(true);
+    setMessage('');
     const res = await fetch('/api/verify-user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: currentEmail, password: currentPassword }),
     });
-
     const data = await res.json();
     setLoading(false);
 
     if (res.ok && data.userId) {
-      setUserId(data.userId);
       setStage('update');
       setMessage('');
     } else {
@@ -49,20 +43,16 @@ export default function MyAccount() {
       return;
     }
 
-    setConfirming(true);
-  };
-
-  const confirmUpdate = async () => {
-    setConfirming(false);
     setLoading(true);
+    setMessage('');
 
     const res = await fetch('/api/update-user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        userId,
+        email: currentEmail,       // current email to identify user
         username: newUsername || undefined,
-        email: newEmail || undefined,
+        newEmail: newEmail || undefined,
         password: newPassword || undefined,
       }),
     });
@@ -71,20 +61,22 @@ export default function MyAccount() {
     setLoading(false);
 
     if (res.ok) {
-      toast.success('User details updated successfully!');
+      setMessage('User details updated successfully!');
+
+      // Clear inputs after success
       setNewUsername('');
       setNewEmail('');
       setNewPassword('');
-      setMessage('');
 
+      // Optional: auto-logout or redirect user for security after email/password change
       if (newEmail || newPassword) {
-        toast('Logging out for security...');
+        // You can redirect to login or clear session here
         setTimeout(() => {
-          router.push('/signin'); // Or use logout logic if you have one
-        }, 1500);
+          window.location.href = '/login'; // adjust route as needed
+        }, 2500);
       }
     } else {
-      toast.error(data.error || 'Failed to update user.');
+      setMessage(data.error || 'Failed to update user.');
     }
   };
 
@@ -101,6 +93,7 @@ export default function MyAccount() {
             onChange={(e) => setCurrentEmail(e.target.value)}
             required
             className="w-full p-2 border rounded"
+            disabled={loading}
           />
           <input
             type="password"
@@ -109,11 +102,12 @@ export default function MyAccount() {
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
             className="w-full p-2 border rounded"
+            disabled={loading}
           />
           <button
             type="submit"
-            disabled={loading}
             className="w-full bg-blue-600 text-white py-2 rounded"
+            disabled={loading}
           >
             {loading ? 'Verifying...' : 'Verify Account'}
           </button>
@@ -126,6 +120,7 @@ export default function MyAccount() {
             value={newUsername}
             onChange={(e) => setNewUsername(e.target.value)}
             className="w-full p-2 border rounded"
+            disabled={loading}
           />
           <input
             type="email"
@@ -133,6 +128,7 @@ export default function MyAccount() {
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
             className="w-full p-2 border rounded"
+            disabled={loading}
           />
           <input
             type="password"
@@ -140,11 +136,12 @@ export default function MyAccount() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             className="w-full p-2 border rounded"
+            disabled={loading}
           />
           <button
             type="submit"
-            disabled={loading}
             className="w-full bg-green-600 text-white py-2 rounded"
+            disabled={loading}
           >
             {loading ? 'Updating...' : 'Update Details'}
           </button>
@@ -152,30 +149,8 @@ export default function MyAccount() {
       )}
 
       {message && <p className="mt-4 text-center text-red-600">{message}</p>}
-
-      {/* Confirmation Modal */}
-      {confirming && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full text-center">
-            <p className="mb-4 text-lg">Are you sure you want to update your details?</p>
-            <div className="flex justify-around">
-              <button
-                onClick={() => setConfirming(false)}
-                className="px-4 py-2 bg-gray-300 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmUpdate}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+
 
