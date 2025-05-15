@@ -6,6 +6,7 @@ type Review = {
   id: string;
   user_name: string;
   user_review: string;
+  rating: number;
   created_at: string;
 };
 
@@ -13,6 +14,7 @@ type NewReview = {
   id: string;
   user_name: string;
   user_review: string;
+  rating: number;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -41,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'GET') {
     const { data, error } = await supabase
       .from('reviews')
-      .select('user_name, user_review, created_at')
+      .select('user_name, user_review, rating, created_at')
       .order('created_at', { ascending: false });
 
     if (error) return res.status(500).json({ error: error.message });
@@ -51,9 +53,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     if (!session) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { user_name, user_review } = req.body;
-    if (!user_name || !user_review) {
+    const { user_name, user_review, rating } = req.body;
+
+    if (!user_name || !user_review || !rating) {
       return res.status(400).json({ error: 'Missing fields' });
+    }
+
+    if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be an integer between 1 and 5' });
     }
 
     const { data, error } = await supabase
@@ -62,6 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         {
           user_name,
           user_review,
+          rating,
           id: session.user.id,
         },
       ])
@@ -76,3 +84,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
+
