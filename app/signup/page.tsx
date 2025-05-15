@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -13,9 +13,8 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,20}$/;
-    if (!passwordPattern.test(password)) {
-      setMessage('Password must be 8–20 characters with uppercase, lowercase, number, and special character.');
+    if (password.length < 8) {
+      setMessage('Password must be at least 8 characters.');
       return;
     }
 
@@ -49,17 +48,14 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen p-4">
-      {/* Logo */}
       <div className="logo py-4 text-center">
         <Link href="/">
           <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
         </Link>
       </div>
 
-      {/* Page Title */}
       <h1 className="text-center text-3xl font-bold mb-6">REGISTER</h1>
 
-      {/* Registration Form */}
       <form onSubmit={handleSubmit} className="max-w-md mx-auto text-center space-y-4">
         <input
           type="text"
@@ -79,7 +75,7 @@ export default function RegisterPage() {
         />
         <input
           type="password"
-          placeholder="Password"
+          placeholder="Password (min 8 characters)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required

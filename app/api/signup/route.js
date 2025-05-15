@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import supabase from '/lib/supabase.js';
+import supabase from '@/lib/supabase';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
@@ -10,12 +10,11 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
 
-  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,20}$/;
-  if (!passwordPattern.test(password)) {
-    return NextResponse.json({
-      error:
-        'Password must be 8–20 characters with uppercase, lowercase, number, and special character.',
-    }, { status: 400 });
+  if (password.length < 8) {
+    return NextResponse.json(
+      { error: 'Password must be at least 8 characters.' },
+      { status: 400 }
+    );
   }
 
   try {
@@ -29,8 +28,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Email already in use.' }, { status: 409 });
     }
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const { error: insertError } = await supabase
       .from('users')
