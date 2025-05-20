@@ -1,14 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,6 +20,9 @@ export default function RegisterPage() {
       setMessage('Password must be at least 8 characters.');
       return;
     }
+
+    setLoading(true);
+    setMessage('');
 
     try {
       const res = await fetch('/api/signup', {
@@ -28,18 +34,21 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        console.error('Signup error:', data);
-        setMessage('Signup failed: ' + (data.error || 'Unknown error'));
+        console.error('Signup error:', data.error);
+        setMessage(data.error || 'Signup failed.');
         return;
       }
 
-      setMessage('Registration successful! Check your email to verify your account.');
-      setUsername('');
-      setEmail('');
-      setPassword('');
-    } catch (error) {
-      console.error('Signup exception:', error);
-      setMessage('An error occurred. Please try again.');
+      // ✅ Redirect or auto-login
+      setMessage('Signup successful! Redirecting...');
+      setTimeout(() => {
+        router.push('/'); // Change route if needed
+      }, 1500);
+    } catch (err) {
+      console.error('Unexpected signup error:', err);
+      setMessage('An unexpected error occurred.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,11 +87,16 @@ export default function RegisterPage() {
           required
           className="w-full p-2 border rounded"
         />
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-          Register
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          {loading ? 'Registering...' : 'Register'}
         </button>
         {message && <p className="mt-2 text-red-600">{message}</p>}
       </form>
     </main>
   );
 }
+
