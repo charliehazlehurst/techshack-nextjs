@@ -31,14 +31,14 @@ export default function Signin() {
       const data = await res.json();
 
       if (res.ok) {
-  console.log('[SIGNIN] Success:', data);
+        console.log('[SIGNIN] Success:', data);
 
-  sessionStorage.setItem('authenticated', 'true');
-  localStorage.setItem('authenticated', 'true');
-  window.dispatchEvent(new Event('authChanged')); // ✅ Notify Navbar
+        sessionStorage.setItem('authenticated', 'true');
+        localStorage.setItem('authenticated', 'true');
+        window.dispatchEvent(new Event('authChanged'));
 
-  router.push('/');
-} else {
+        router.push('/');
+      } else {
         console.warn('[SIGNIN] Failed:', data.error);
         setErrorMessage(data.error || 'An error occurred. Please try again.');
       }
@@ -90,4 +90,5 @@ export default function Signin() {
     </main>
   );
 }
+
 
