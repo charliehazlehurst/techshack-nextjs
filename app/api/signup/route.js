@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import supabase from '/lib/supabase.js';
-import bcrypt from 'bcryptjs';
+import supabase from '/lib/supabase.js'; // Adjust path if needed
 
 export async function POST(req) {
-  const body = await req.json();
-  const { username, email, password } = body;
+  const { username, email, password } = await req.json();
 
   if (!username || !email || !password) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -17,30 +15,25 @@ export async function POST(req) {
     );
   }
 
-  try {
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .single();
+  // Register with Supabase Auth
+  const { data: authData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password,
+  });
 
-    if (existingUser) {
-      return NextResponse.json({ error: 'Email already in use.' }, { status: 409 });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const { error: insertError } = await supabase
-      .from('users')
-      .insert([{ username, email, password: hashedPassword }]);
-
-    if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ message: 'User registered successfully!' }, { status: 201 });
-  } catch (err) {
-    console.error('Signup error:', err);
-    return NextResponse.json({ error: 'An error occurred during signup.' }, { status: 500 });
+  if (signUpError) {
+    return NextResponse.json({ error: signUpError.message }, { status: 400 });
   }
+
+  // Add to profiles table
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .insert([{ id: authData.user.id, username }]);
+
+  if (profileError) {
+    return NextResponse.json({ error: profileError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ message: 'User registered successfully!' }, { status: 201 });
 }
+

@@ -25,23 +25,20 @@ export default function RegisterPage() {
         body: JSON.stringify({ username, email, password }),
       });
 
-      const text = await res.text();
+      const data = await res.json();
 
       if (!res.ok) {
-        console.error('Error response:', text);
-        setMessage('Signup failed: ' + text);
+        console.error('Signup error:', data);
+        setMessage('Signup failed: ' + (data.error || 'Unknown error'));
         return;
       }
 
-      const data = text ? JSON.parse(text) : {};
-      console.log('API response:', data);
-
-      setMessage('Registration successful! You may now sign in.');
+      setMessage('Registration successful! Check your email to verify your account.');
       setUsername('');
       setEmail('');
       setPassword('');
     } catch (error) {
-      console.error('Error during registration:', error);
+      console.error('Signup exception:', error);
       setMessage('An error occurred. Please try again.');
     }
   };
