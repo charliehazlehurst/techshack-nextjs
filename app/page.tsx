@@ -29,7 +29,7 @@ export default function Home() {
 
       <div
         className="hero-image"
-        style={{ backgroundImage: "url('/images/hero.jpg')" }}
+        style={{ backgroundImage: "url('/images/banner.jpg')" }}
       >
         <div className="hero-text text-white text-center py-20 bg-black/40">
           <h1 className="text-4xl font-bold">WELCOME TO TECH SHACK</h1>
