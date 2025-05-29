@@ -27,15 +27,11 @@ export default function Home() {
         </div>
       )}
 
-      <div
-        className="hero-image"
-        style={{ backgroundImage: "url('/images/banner.jpg')" }}
-      >
+
         <div className="hero-text text-white text-center py-20 bg-black/40">
           <h1 className="text-4xl font-bold">WELCOME TO TECH SHACK</h1>
           <p className="text-xl mt-2">RESTORING YOUR DIGITAL WORLD, ONE BYTE AT A TIME!</p>
         </div>
-      </div>
 
       <div className="my-12 flex justify-center">
         <hr className="w-3/4 border-black" />
