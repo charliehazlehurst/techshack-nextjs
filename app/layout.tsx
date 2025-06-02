@@ -1,21 +1,21 @@
-// app/layout.tsx
-import './globals.css'
-import type { Metadata } from 'next'
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
-import { AuthProvider } from '@/components/auth-context';
-import { Analytics } from "@vercel/analytics/next"
+import './globals.css';
+import type { Metadata } from 'next';
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import AuthProviderWrapper from './AuthProviderWrapper';
+
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: 'Tech Shack',
   description: 'Your Digital Solutions Expert',
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
@@ -28,12 +28,14 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body>
-        <Navbar /> 
-        {children}
+        <Navbar />
+        <AuthProviderWrapper>
+          {children}
+        </AuthProviderWrapper>
         <Footer />
       </body>
     </html>
-  )
+  );
 }
 
 
