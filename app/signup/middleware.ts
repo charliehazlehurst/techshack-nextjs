@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { supabase } from '../lib/supabaseClient'; // adjust the path if needed
+import { supabase } from '@/lib/supabase';
+// or
+// import { supabase } from '/lib/supabase.ts'; // adjust as needed
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get('sb:token')?.value;

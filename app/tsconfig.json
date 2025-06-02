@@ -20,8 +20,8 @@
     "baseUrl": ".", // This tells the compiler where to start resolving modules from.
     "paths": {
       "@/*": [
-        "./app/*"
-      ] // This allows the alias '@' to point to your 'app' directory.
+        "./*"
+      ] // This allows the alias '@' to point to your 'lib' directory.
     },
     "plugins": [
       {
