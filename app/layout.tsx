@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Navbar from './components/Navbar';
+import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthProviderWrapper from './AuthProviderWrapper';
 
