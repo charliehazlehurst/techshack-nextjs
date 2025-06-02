@@ -1,29 +1,20 @@
 // pages/api/magic-link.js
-import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server';
+import { supabase } from '/lib/supabase.js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+export async function POST(request) {
+  const { email } = await request.json();
 
-export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    const { email } = req.body
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    },
+  });
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
-      },
-    })
-
-    if (error) {
-      return res.status(400).json({ error: error.message })
-    }
-
-    return res.status(200).json({ message: 'Magic link sent!' })
-  } else {
-    res.setHeader('Allow', ['POST'])
-    res.status(405).end(`Method ${req.method} Not Allowed`)
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
+
+  return NextResponse.json({ message: 'Magic link sent!' }, { status: 200 });
 }

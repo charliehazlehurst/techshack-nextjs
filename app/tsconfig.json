@@ -34,7 +34,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-, "pages/api/signup.js", "pages/api/signin.js", "pages/api/verify-user.js"  ],
+, "pages/api/signup.js", "pages/api/signin.js", "pages/api/verify-user.js", "api/magic-link/route.js"  ],
   "exclude": [
     "node_modules"
   ]
