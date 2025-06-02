@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import supabase from '/lib/supabase.js'; // Adjust the import path as necessary
+import supabase from '/lib/supabase.js';
 
 export async function POST(req) {
   try {
@@ -13,41 +13,41 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Password too short' }, { status: 400 });
     }
 
-    // Create user via Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
     });
 
     if (authError) {
-      console.error('Signup error:', authError);
       return NextResponse.json({ error: authError.message }, { status: 400 });
     }
 
     const user = authData.user;
     if (!user) {
-      return NextResponse.json({ error: 'Signup failed. Try again.' }, { status: 500 });
-    }
-
-    // Check if email is confirmed
-    if (!user.confirmed_at) {
-      return NextResponse.json({ message: 'Please confirm your email before proceeding.' }, { status: 200 });
+      return NextResponse.json({ error: 'Signup failed.' }, { status: 500 });
     }
 
     // Insert into profiles table
     const { error: profileError } = await supabase
       .from('profiles')
-      .insert([{ id: user.id, email, username }]);
+      .insert([{ id: user.id, email, username, role: 'user' }]);
 
     if (profileError) {
-      console.error('Profile insert error:', profileError);
       return NextResponse.json({ error: profileError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ message: 'User registered successfully!' }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: user.confirmed_at
+          ? 'User registered and confirmed!'
+          : 'Signup successful — please verify your email.',
+      },
+      { status: 201 }
+    );
   } catch (err) {
     console.error('Unexpected signup error:', err);
     return NextResponse.json({ error: 'Unexpected error during signup.' }, { status: 500 });
   }
 }
+
 

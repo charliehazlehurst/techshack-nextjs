@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import supabase from '/lib/supabase.js'; // Adjust path if your supabase.js is elsewhere
+import supabase from '/lib/supabase.js';
 
 export async function POST(req) {
   try {
@@ -15,16 +15,15 @@ export async function POST(req) {
     });
 
     if (authError) {
-      console.error('Auth error:', authError);
       return NextResponse.json({ error: authError.message }, { status: 401 });
     }
 
     const user = authData.user;
     if (!user) {
-      return NextResponse.json({ error: 'User not found after login.' }, { status: 500 });
+      return NextResponse.json({ error: 'No user returned.' }, { status: 500 });
     }
 
-    // Look up user's role from 'profiles' table
+    // Fetch role from profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
@@ -32,14 +31,13 @@ export async function POST(req) {
       .single();
 
     if (profileError) {
-      console.error('Profile fetch error:', profileError);
-      return NextResponse.json({ error: 'Failed to load user profile.' }, { status: 500 });
+      return NextResponse.json({ error: 'Profile fetch failed' }, { status: 500 });
     }
 
     return NextResponse.json(
       {
         message: 'Signin successful!',
-        role: profile?.role || 'user', // default to 'user' if not set
+        role: profile?.role || 'user',
       },
       { status: 200 }
     );
@@ -48,3 +46,4 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Unexpected error during signin.' }, { status: 500 });
   }
 }
+
