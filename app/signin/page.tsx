@@ -1,15 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function SigninPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,21 +29,56 @@ export default function SigninPage() {
       const res = await fetch('/api/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
         setMessage('Signin failed: ' + (data.error || 'Invalid credentials'));
+        toast.error(data.error || 'Invalid credentials');
         return;
       }
 
-      setMessage('');
-      router.push('/dashboard'); // Redirect on success
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
+      toast.success('Signed in successfully!');
+
+      const userRole = data.role;
+      if (userRole === 'admin') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (error) {
       console.error('Error during signin:', error);
-      setMessage('An error occurred. Please try again.');
+      toast.error('An error occurred. Please try again.');
+    }
+  };
+
+  const handleMagicLink = async () => {
+    try {
+      const res = await fetch('/api/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error('Failed to send magic link: ' + (data.error || 'Unknown error'));
+        return;
+      }
+
+      toast.success('Magic link sent! Please check your email.');
+    } catch (error) {
+      console.error('Error sending magic link:', error);
+      toast.error('An error occurred. Please try again.');
     }
   };
 
@@ -70,8 +116,30 @@ export default function SigninPage() {
           className="w-full p-2 border rounded"
         />
 
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <div className="flex items-center justify-center">
+          <input
+            type="checkbox"
+            id="rememberMe"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="mr-2"
+          />
+          <label htmlFor="rememberMe">Remember Me</label>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
           Sign In
+        </button>
+
+        <button
+          type="button"
+          onClick={handleMagicLink}
+          className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+        >
+          Send Magic Link
         </button>
 
         <p className="text-sm text-gray-600">
@@ -86,6 +154,7 @@ export default function SigninPage() {
     </main>
   );
 }
+
 
 
 
