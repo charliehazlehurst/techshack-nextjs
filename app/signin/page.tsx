@@ -72,6 +72,7 @@ export default function Signin() {
         <input
           type="password"
           placeholder="Password"
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required

@@ -2,33 +2,46 @@ import { NextResponse } from 'next/server';
 import supabase from '/lib/supabase.js';
 
 export async function POST(req) {
-  const body = await req.json();
-  const { email, password } = body;
-
-  if (!email || !password) {
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
-  }
-
-  if (password.length < 8) {
-    return NextResponse.json(
-      { error: 'Password must be at least 8 characters.' },
-      { status: 400 }
-    );
-  }
-
   try {
-    const { data, error } = await supabase.auth.signUp({
+    const { username, email, password } = await req.json();
+
+    if (!username || !email || !password) {
+      return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json({ error: 'Password too short' }, { status: 400 });
+    }
+
+    // 1. Create user via Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
     });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (authError) {
+      console.error('Signup error:', authError);
+      return NextResponse.json({ error: authError.message }, { status: 400 });
+    }
+
+    const user = authData.user;
+    if (!user) {
+      return NextResponse.json({ error: 'Signup failed. Try again.' }, { status: 500 });
+    }
+
+    // 2. Insert into `profiles` table
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert([{ id: user.id, email, username }]);
+
+    if (profileError) {
+      console.error('Profile insert error:', profileError);
+      return NextResponse.json({ error: profileError.message }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'User registered successfully!' }, { status: 201 });
   } catch (err) {
-    console.error('Signup error:', err);
-    return NextResponse.json({ error: 'An error occurred during signup.' }, { status: 500 });
+    console.error('Unexpected signup error:', err);
+    return NextResponse.json({ error: 'Unexpected error during signup.' }, { status: 500 });
   }
 }
