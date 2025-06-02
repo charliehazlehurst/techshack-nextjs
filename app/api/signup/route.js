@@ -13,7 +13,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Password too short' }, { status: 400 });
     }
 
-    // 1. Create user via Supabase Auth
+    // Create user via Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -29,7 +29,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Signup failed. Try again.' }, { status: 500 });
     }
 
-    // 2. Insert into `profiles` table
+    // Insert into profiles table
     const { error: profileError } = await supabase
       .from('profiles')
       .insert([{ id: user.id, email, username }]);
