@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import supabase from '/lib/supabase.js';
+import supabase from '/lib/supabase.js'; // Adjust the import path as necessary
 
 export async function POST(req) {
   try {
@@ -29,6 +29,11 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Signup failed. Try again.' }, { status: 500 });
     }
 
+    // Check if email is confirmed
+    if (!user.confirmed_at) {
+      return NextResponse.json({ message: 'Please confirm your email before proceeding.' }, { status: 200 });
+    }
+
     // Insert into profiles table
     const { error: profileError } = await supabase
       .from('profiles')
@@ -45,3 +50,4 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Unexpected error during signup.' }, { status: 500 });
   }
 }
+

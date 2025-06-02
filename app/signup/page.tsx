@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -21,19 +24,18 @@ export default function RegisterPage() {
       const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, email, password }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage('Signup failed: ' + data.error);
+        setMessage('Signup failed: ' + (data.error || 'Unknown error'));
         return;
       }
 
-      setMessage('Registration successful! You may now sign in.');
-      setEmail('');
-      setPassword('');
+      setMessage('');
+      router.push('/signin');
     } catch (error) {
       console.error('Error during registration:', error);
       setMessage('An error occurred. Please try again.');
@@ -52,8 +54,18 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit} className="max-w-md mx-auto text-center space-y-4">
         <input
+          type="text"
+          placeholder="Username"
+          autoComplete="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          className="w-full p-2 border rounded"
+        />
+        <input
           type="email"
           placeholder="Email"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -76,4 +88,7 @@ export default function RegisterPage() {
     </main>
   );
 }
+
+
+
 

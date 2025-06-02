@@ -2,24 +2,17 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 
-export default function Signin() {
+export default function SigninPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!email || !password) {
-      setErrorMessage('Please fill in all fields.');
-      return;
-    }
-
-    setIsLoading(true);
-    setErrorMessage('');
 
     try {
       const res = await fetch('/api/signin', {
@@ -30,45 +23,43 @@ export default function Signin() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        console.log('[SIGNIN] Success:', data);
-
-        sessionStorage.setItem('authenticated', 'true');
-        localStorage.setItem('authenticated', 'true');
-        window.dispatchEvent(new Event('authChanged'));
-
-        router.push('/');
-      } else {
-        console.warn('[SIGNIN] Failed:', data.error);
-        setErrorMessage(data.error || 'An error occurred. Please try again.');
+      if (!res.ok) {
+        setMessage('Signin failed: ' + (data.error || 'Invalid credentials'));
+        return;
       }
+
+      setMessage('');
+      router.push('/dashboard'); // Redirect on success
     } catch (error) {
-      console.error('[SIGNIN] Fetch error:', error);
-      setErrorMessage('An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
+      console.error('Error during signin:', error);
+      setMessage('An error occurred. Please try again.');
     }
   };
 
   return (
-    <main className="min-h-screen p-4">
+    <main className="min-h-screen p-4 bg-gray-50">
       <div className="logo py-4 text-center">
-        <a href="/">
-          <img src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
-        </a>
+        <Link href="/">
+          <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
+        </Link>
       </div>
 
       <h1 className="text-center text-3xl font-bold mb-6">SIGN IN</h1>
 
-      <form onSubmit={handleSubmit} className="max-w-md mx-auto text-center space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-md mx-auto text-center space-y-4 bg-white p-6 rounded shadow-md"
+      >
         <input
           type="email"
           placeholder="Email"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           className="w-full p-2 border rounded"
         />
+
         <input
           type="password"
           placeholder="Password"
@@ -78,18 +69,24 @@ export default function Signin() {
           required
           className="w-full p-2 border rounded"
         />
-        <button
-          type="submit"
-          className={`bg-blue-600 text-white px-4 py-2 rounded ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Signing in...' : 'Sign In'}
+
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          Sign In
         </button>
 
-        {errorMessage && <p className="mt-2 text-red-600">{errorMessage}</p>}
+        <p className="text-sm text-gray-600">
+          Don’t have an account?{' '}
+          <Link href="/signup" className="text-blue-600 hover:underline">
+            Register here
+          </Link>
+        </p>
+
+        {message && <p className="mt-2 text-red-600">{message}</p>}
       </form>
     </main>
   );
 }
+
+
 
 
