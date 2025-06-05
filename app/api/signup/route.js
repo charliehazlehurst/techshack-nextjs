@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { pwnedPassword } from 'hibp';
 
 export async function POST(req) {
   try {
@@ -11,6 +12,14 @@ export async function POST(req) {
 
     if (password.length < 8) {
       return NextResponse.json({ error: 'Password too short' }, { status: 400 });
+    }
+
+    // Check password against HaveIBeenPwned
+    const breachCount = await pwnedPassword(password);
+    if (breachCount > 0) {
+      return NextResponse.json({
+        error: `This password has appeared in ${breachCount} data breaches. Please use a more secure password.`,
+      }, { status: 400 });
     }
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -27,7 +36,6 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Signup failed.' }, { status: 500 });
     }
 
-    // Insert into profiles table
     const { error: profileError } = await supabase
       .from('profiles')
       .insert([{ id: user.id, email, username, role: 'user' }]);
@@ -49,5 +57,6 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Unexpected error during signup.' }, { status: 500 });
   }
 }
+
 
 
