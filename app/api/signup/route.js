@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase'; // public client for auth
+import supabaseAdmin from '@/lib/supabaseAdmin'; // admin client for bypassing RLS
 import { pwnedPassword } from 'hibp';
 
 export async function POST(req) {
   try {
     const { username, email, password } = await req.json();
 
+    // Basic validation
     if (!username || !email || !password) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
@@ -14,7 +16,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Password too short' }, { status: 400 });
     }
 
-    // Check password against HaveIBeenPwned
+    // Optional: check password against HaveIBeenPwned
     const breachCount = await pwnedPassword(password);
     if (breachCount > 0) {
       return NextResponse.json({
@@ -22,6 +24,7 @@ export async function POST(req) {
       }, { status: 400 });
     }
 
+    // Step 1: Sign up the user using the public client
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -31,19 +34,22 @@ export async function POST(req) {
       return NextResponse.json({ error: authError.message }, { status: 400 });
     }
 
-    const user = authData.user;
+    const user = authData?.user;
     if (!user) {
       return NextResponse.json({ error: 'Signup failed.' }, { status: 500 });
     }
 
-    const { error: profileError } = await supabase
+    // Step 2: Insert into `profiles` using the admin client (bypasses RLS)
+    const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .insert([{ id: user.id, email, username, role: 'user' }]);
 
     if (profileError) {
+      console.error('Profile insert error:', profileError);
       return NextResponse.json({ error: profileError.message }, { status: 500 });
     }
 
+    // Success
     return NextResponse.json(
       {
         message: user.confirmed_at
