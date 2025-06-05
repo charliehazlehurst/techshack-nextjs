@@ -50,9 +50,7 @@ export default function SigninPage() {
 
       const userRole = data.role;
       if (userRole === 'admin') {
-        router.push('/admin/dashboard');
-      } else {
-        router.push('/dashboard');
+        router.push('/');
       }
     } catch (error) {
       console.error('Error during signin:', error);
