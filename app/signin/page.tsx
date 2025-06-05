@@ -40,6 +40,12 @@ export default function SigninPage() {
         return;
       }
 
+      if (data.emailConfirmed === false) {
+        setMessage('Please verify your email before signing in.');
+        toast.error('Please verify your email before signing in.');
+        return;
+      }
+
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', email);
       } else {
@@ -50,7 +56,9 @@ export default function SigninPage() {
 
       const userRole = data.role;
       if (userRole === 'admin') {
-        router.push('/');
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/app'); // Redirect non-admin users to homepage
       }
     } catch (error) {
       console.error('Error during signin:', error);
