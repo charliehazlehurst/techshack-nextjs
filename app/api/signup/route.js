@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase'; // public client for auth
-import supabaseAdmin from '@/lib/supabaseAdmin'; // admin client for bypassing RLS
+import { createClient } from '@supabase/supabase-js';
 import { pwnedPassword } from 'hibp';
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY // Must be service role
+);
 
 export async function POST(req) {
   try {
     const { username, email, password } = await req.json();
 
-    // Basic validation
     if (!username || !email || !password) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
@@ -16,7 +19,6 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Password too short' }, { status: 400 });
     }
 
-    // Optional: check password against HaveIBeenPwned
     const breachCount = await pwnedPassword(password);
     if (breachCount > 0) {
       return NextResponse.json({
@@ -24,10 +26,11 @@ export async function POST(req) {
       }, { status: 400 });
     }
 
-    // Step 1: Sign up the user using the public client
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Create auth user first
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
+      email_confirm: true,
     });
 
     if (authError) {
@@ -35,26 +38,22 @@ export async function POST(req) {
     }
 
     const user = authData?.user;
-    if (!user) {
-      return NextResponse.json({ error: 'Signup failed.' }, { status: 500 });
+    if (!user || !user.id) {
+      return NextResponse.json({ error: 'User creation failed.' }, { status: 500 });
     }
 
-    // Step 2: Insert into `profiles` using the admin client (bypasses RLS)
+    // Now insert into profiles table using that id
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .insert([{ id: user.id, email, username, role: 'user' }]);
 
     if (profileError) {
-      console.error('Profile insert error:', profileError);
       return NextResponse.json({ error: profileError.message }, { status: 500 });
     }
 
-    // Success
     return NextResponse.json(
       {
-        message: user.confirmed_at
-          ? 'User registered and confirmed!'
-          : 'Signup successful — please verify your email.',
+        message: 'User registered successfully!',
       },
       { status: 201 }
     );
