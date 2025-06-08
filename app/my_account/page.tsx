@@ -1,156 +1,107 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/app/components/auth-context';
+import { toast } from 'react-toastify';
 
 export default function MyAccount() {
-  const [stage, setStage] = useState<'verify' | 'update'>('verify');
-  const [currentEmail, setCurrentEmail] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-
-  // For update stage
-  const [newUsername, setNewUsername] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const { user } = useAuth();
   const [message, setMessage] = useState('');
+  const [newUsername, setNewUsername] = useState(user?.user_metadata?.username || '');
+  const [newEmail, setNewEmail] = useState(user?.email || '');
   const [loading, setLoading] = useState(false);
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    setLoading(true);
-    setMessage('');
-    const res = await fetch('/api/verify-user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: currentEmail, password: currentPassword }),
-    });
-    const data = await res.json();
-    setLoading(false);
-
-    if (res.ok && data.userId) {
-      setStage('update');
-      setMessage('');
-    } else {
-      setMessage(data.error || 'Invalid credentials.');
+  useEffect(() => {
+    if (user) {
+      setNewUsername(user.user_metadata?.username || '');
+      setNewEmail(user.email || '');
     }
-  };
+  }, [user]);
 
   const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
+  setLoading(true);
+  setMessage('');
 
-    if (!newUsername && !newEmail && !newPassword) {
-      setMessage('Please enter at least one field to update.');
-      return;
-    }
+  if (!user?.email) {
+    setMessage('User email not found.');
+    setLoading(false);
+    return;
+  }
 
-    setLoading(true);
-    setMessage('');
+  // Prepare payload for backend
+  const updates: any = {
+    email: user.email, // current email to find user in DB
+  };
 
+  if (newUsername !== user.user_metadata?.username) updates.username = newUsername;
+  if (newEmail !== user.email) updates.newEmail = newEmail; // send newEmail as separate field
+
+  if (Object.keys(updates).length === 1) { // only has email (current email)
+    setMessage('No changes detected.');
+    setLoading(false);
+    return;
+  }
+
+  try {
     const res = await fetch('/api/update-user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: currentEmail,       // current email to identify user
-        username: newUsername || undefined,
-        newEmail: newEmail || undefined,
-        password: newPassword || undefined,
-      }),
+      body: JSON.stringify(updates),
     });
 
     const data = await res.json();
-    setLoading(false);
 
-    if (res.ok) {
-      setMessage('User details updated successfully!');
-
-      // Clear inputs after success
-      setNewUsername('');
-      setNewEmail('');
-      setNewPassword('');
-
-      // Optional: auto-logout or redirect user for security after email/password change
-      if (newEmail || newPassword) {
-        // You can redirect to login or clear session here
-        setTimeout(() => {
-          window.location.href = '/login'; // adjust route as needed
-        }, 2500);
-      }
+    if (!res.ok) {
+      setMessage(data.error || 'Update failed.');
+      toast.error(data.error || 'Update failed.');
     } else {
-      setMessage(data.error || 'Failed to update user.');
+      setMessage('Profile updated!');
+      toast.success('Account updated.');
     }
-  };
+  } catch (err) {
+    setMessage('Unexpected error.');
+    toast.error('Unexpected error.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="max-w-md mx-auto p-4">
       <h1 className="text-3xl font-bold text-center mb-6">My Account</h1>
 
-      {stage === 'verify' ? (
-        <form onSubmit={handleVerify} className="space-y-4">
+      <form onSubmit={handleUpdate} className="space-y-4">
+        <div>
+          <label>Email</label>
           <input
             type="email"
-            placeholder="Current Email"
-            value={currentEmail}
-            onChange={(e) => setCurrentEmail(e.target.value)}
-            required
-            className="w-full p-2 border rounded"
-            disabled={loading}
-          />
-          <input
-            type="password"
-            placeholder="Current Password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            required
-            className="w-full p-2 border rounded"
-            disabled={loading}
-          />
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded"
-            disabled={loading}
-          >
-            {loading ? 'Verifying...' : 'Verify Account'}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={handleUpdate} className="space-y-4">
-          <input
-            type="text"
-            placeholder="New Username"
-            value={newUsername}
-            onChange={(e) => setNewUsername(e.target.value)}
-            className="w-full p-2 border rounded"
-            disabled={loading}
-          />
-          <input
-            type="email"
-            placeholder="New Email"
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
             className="w-full p-2 border rounded"
             disabled={loading}
           />
+        </div>
+        <div>
+          <label>Username</label>
           <input
-            type="password"
-            placeholder="New Password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+            type="text"
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
             className="w-full p-2 border rounded"
             disabled={loading}
           />
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white py-2 rounded"
-            disabled={loading}
-          >
-            {loading ? 'Updating...' : 'Update Details'}
-          </button>
-        </form>
-      )}
-
-      {message && <p className="mt-4 text-center text-red-600">{message}</p>}
+        </div>
+        <button type="submit" className="w-full bg-green-600 text-white py-2 rounded" disabled={loading}>
+          {loading ? 'Updating...' : 'Update Details'}
+        </button>
+        {message && <p className="mt-4 text-center text-red-600">{message}</p>}
+      </form>
     </div>
   );
 }
+
+
 
 

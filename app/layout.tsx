@@ -1,11 +1,10 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import Navbar from './components/Navbar';
-import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthProviderWrapper from './AuthProviderWrapper';
-import { Analytics } from "@vercel/analytics/next";
+import { ToastContainer } from 'react-toastify';        // <-- ADD THIS
+import 'react-toastify/dist/ReactToastify.css';          // <-- ADD THIS
 
 export const metadata: Metadata = {
   title: 'Tech Shack',
@@ -33,10 +32,12 @@ export default function RootLayout({
           {children}
           <Footer />
         </AuthProviderWrapper>
+        <ToastContainer />   {/* <-- ADD HERE */}
       </body>
     </html>
   );
 }
+
 
 
 

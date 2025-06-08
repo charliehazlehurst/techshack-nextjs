@@ -1,3 +1,4 @@
+// app/components/auth-context.tsx
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
@@ -17,31 +18,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const getUser = async () => {
+    const init = async () => {
       const { data, error } = await supabase.auth.getUser();
       if (data?.user) {
         setUser(data.user);
         setIsAuthenticated(true);
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
       }
     };
+    init();
 
-    getUser();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
       setIsAuthenticated(!!session?.user);
     });
-
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
+    return () => listener.subscription.unsubscribe();
   }, []);
 
-  const signIn = (user: any) => {
-    setUser(user);
+  const signIn = (u: any) => {
+    setUser(u);
     setIsAuthenticated(true);
   };
 
@@ -59,8 +53,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 };
 
