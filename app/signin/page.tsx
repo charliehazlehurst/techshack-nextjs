@@ -58,7 +58,7 @@ export default function SigninPage() {
       if (userRole === 'admin') {
         router.push('/admin/dashboard');
       } else {
-        router.push('/app'); // Redirect non-admin users to homepage
+        router.push('/app/page.tsx'); // Redirect non-admin users to homepage
       }
     } catch (error) {
       console.error('Error during signin:', error);
