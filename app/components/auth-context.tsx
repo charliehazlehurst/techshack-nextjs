@@ -1,36 +1,52 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '@/lib/supabase';
 
 type AuthContextType = {
   isAuthenticated: boolean;
-  signIn: () => void;
+  user: any;
   signOut: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('authenticated');
-    setIsAuthenticated(token === 'true');
+    const getUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (data?.user) {
+        setUser(data.user);
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    };
+
+    getUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setIsAuthenticated(!!session?.user);
+    });
+
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
   }, []);
 
-  const signIn = () => {
-    localStorage.setItem('authenticated', 'true');
-    setIsAuthenticated(true);
-  };
-
-  const signOut = () => {
-    localStorage.removeItem('authenticated');
-    localStorage.setItem('signedOutMessage', 'You have been signed out.');
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
     setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, signIn, signOut }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, signOut }}>
       {children}
     </AuthContext.Provider>
   );

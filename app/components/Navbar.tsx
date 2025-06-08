@@ -2,31 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/app/components/auth-context';
 
 const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('authenticated');
-      setIsAuthenticated(!!token);
-      setHasMounted(true);
-    };
-
-    checkAuth();
-
-    const handleAuthChange = () => checkAuth();
-
-    window.addEventListener('authChanged', handleAuthChange);
-
-    return () => {
-      window.removeEventListener('authChanged', handleAuthChange);
-    };
-  }, []);
+  const { isAuthenticated, signOut } = useAuth();
 
   const navItems = [
     { href: '/', label: 'HOME' },
@@ -37,11 +18,8 @@ const Navbar: React.FC = () => {
     { href: '/contact', label: 'CONTACT US' },
   ];
 
-  const handleSignOut = () => {
-    localStorage.removeItem('authenticated');
-    localStorage.setItem('signedOutMessage', 'You have been signed out.');
-    window.dispatchEvent(new Event('authChanged'));
-    setIsAuthenticated(false);
+  const handleSignOut = async () => {
+    await signOut();
     router.push('/');
   };
 
@@ -59,50 +37,50 @@ const Navbar: React.FC = () => {
         </Link>
       ))}
 
-      {hasMounted && (
-        isAuthenticated ? (
-          <>
-            <Link
-              href="/my_account"
-              className={`${
-                pathname === '/my_account' ? 'text-orange-500' : 'text-black'
-              } hover:text-orange-500 transition-colors duration-300`}
-            >
-              MY ACCOUNT
-            </Link>
-            <button
-              onClick={handleSignOut}
-              className="text-black hover:text-orange-500 transition-colors duration-300"
-            >
-              SIGN OUT
-            </button>
-          </>
-        ) : (
-          <>
-            <Link
-              href="/signin"
-              className={`${
-                pathname === '/signin' ? 'text-orange-500' : 'text-black'
-              } hover:text-orange-500 transition-colors duration-300`}
-            >
-              SIGN IN
-            </Link>
-            <Link
-              href="/signup"
-              className={`${
-                pathname === '/signup' ? 'text-orange-500' : 'text-black'
-              } hover:text-orange-500 transition-colors duration-300`}
-            >
-              REGISTER
-            </Link>
-          </>
-        )
+      {isAuthenticated ? (
+        <>
+          <Link
+            href="/my_account"
+            className={`${
+              pathname === '/my_account' ? 'text-orange-500' : 'text-black'
+            } hover:text-orange-500 transition-colors duration-300`}
+          >
+            MY ACCOUNT
+          </Link>
+          <button
+            onClick={handleSignOut}
+            className="text-black hover:text-orange-500 transition-colors duration-300"
+          >
+            SIGN OUT
+          </button>
+        </>
+      ) : (
+        <>
+          <Link
+            href="/signin"
+            className={`${
+              pathname === '/signin' ? 'text-orange-500' : 'text-black'
+            } hover:text-orange-500 transition-colors duration-300`}
+          >
+            SIGN IN
+          </Link>
+          <Link
+            href="/signup"
+            className={`${
+              pathname === '/signup' ? 'text-orange-500' : 'text-black'
+            } hover:text-orange-500 transition-colors duration-300`}
+          >
+            REGISTER
+          </Link>
+        </>
       )}
     </nav>
   );
 };
 
 export default Navbar;
+
+
 
 
 

@@ -5,7 +5,6 @@ import Navbar from './components/Navbar';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthProviderWrapper from './AuthProviderWrapper';
-
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
@@ -29,16 +28,15 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body>
-        <Navbar />
         <AuthProviderWrapper>
+          <Navbar />
           {children}
+          <Footer />
         </AuthProviderWrapper>
-        <Footer />
       </body>
     </html>
   );
 }
-
 
 
 
