@@ -6,9 +6,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useAuth } from '@/app/components/auth-context';
 
 export default function SigninPage() {
   const router = useRouter();
+  const { signIn } = useAuth(); // ✅ Use signIn from context
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -53,12 +56,13 @@ export default function SigninPage() {
       }
 
       toast.success('Signed in successfully!');
+      signIn(data.user); // ✅ Pass the user object from the response
 
       const userRole = data.role;
       if (userRole === 'admin') {
         router.push('/admin/dashboard');
       } else {
-        router.push('/'); // Redirect non-admin users to homepage
+        router.push('/');
       }
     } catch (error) {
       console.error('Error during signin:', error);

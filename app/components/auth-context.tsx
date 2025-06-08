@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 type AuthContextType = {
   isAuthenticated: boolean;
   user: any;
+  signIn: (user: any) => void;
   signOut: () => void;
 };
 
@@ -39,6 +40,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  const signIn = (user: any) => {
+    setUser(user);
+    setIsAuthenticated(true);
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -46,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, signOut }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
