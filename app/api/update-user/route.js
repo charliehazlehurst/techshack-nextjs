@@ -12,7 +12,7 @@ export async function POST(req) {
 
     const updates = {};
     if (username) updates.username = username;
-    if (newEmail) updates.email = newEmail; // allow updating email to a new one
+    if (newEmail) updates.email = newEmail; // update email if provided
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       updates.password = hashedPassword;
@@ -22,10 +22,11 @@ export async function POST(req) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 
+    // Update user where email equals current email
     const { error } = await supabase
       .from('users')
       .update(updates)
-      .eq('email', email); // match on current email
+      .eq('email', email);
 
     if (error) {
       console.error('Supabase update error:', error);
@@ -39,4 +40,5 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Server error during update' }, { status: 500 });
   }
 }
+
 
