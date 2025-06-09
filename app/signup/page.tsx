@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,6 +19,7 @@ export default function RegisterPage() {
 
     if (password.length < 8) {
       setMessage('Password must be at least 8 characters.');
+      toast.error('Password must be at least 8 characters.');
       return;
     }
 
@@ -31,14 +34,22 @@ export default function RegisterPage() {
 
       if (!res.ok) {
         setMessage('Signup failed: ' + (data.error || 'Unknown error'));
+        toast.error(data.error || 'Signup failed.');
         return;
       }
 
-      setMessage('');
-      router.push('/signin');
+      setMessage('Signup successful! Please check your email to confirm your account.');
+      toast.success('Signup successful! Please check your email.');
+
+      // Optionally, delay navigation to give the user time to read the success message
+      setTimeout(() => {
+        router.push('/signin');
+      }, 1500);
+
     } catch (error) {
       console.error('Error during registration:', error);
       setMessage('An error occurred. Please try again.');
+      toast.error('An error occurred. Please try again.');
     }
   };
 
@@ -74,7 +85,7 @@ export default function RegisterPage() {
         <input
           type="password"
           placeholder="Password (min 8 characters)"
-          autoComplete="current-password"
+          autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -83,11 +94,20 @@ export default function RegisterPage() {
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
           Register
         </button>
+
         {message && <p className="mt-2 text-red-600">{message}</p>}
+
+        <p className="text-sm text-gray-600 mt-4">
+          Already have an account?{' '}
+          <Link href="/signin" className="text-blue-600 hover:underline">
+            Sign in here
+          </Link>
+        </p>
       </form>
     </main>
   );
 }
+
 
 
 
