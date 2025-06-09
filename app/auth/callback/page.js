@@ -24,14 +24,12 @@ export default function CallbackPage() {
       let error = null;
 
       if (typeParam === 'sms') {
-        // For SMS OTP, 'phone' is required instead of 'token_hash'
         const { error: smsError } = await supabase.auth.verifyOtp({
           phone: token_hash,
           type: 'sms',
         });
         error = smsError;
       } else if (emailOtpTypes.includes(typeParam)) {
-        // For email OTPs, pass token_hash and type
         const { error: emailError } = await supabase.auth.verifyOtp({
           token_hash,
           type: typeParam,
