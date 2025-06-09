@@ -10,7 +10,7 @@ import { useAuth } from '@/app/components/auth-context';
 
 export default function SigninPage() {
   const router = useRouter();
-  const { signIn } = useAuth(); // ✅ Use signIn from context
+  const { signIn } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,7 +32,7 @@ export default function SigninPage() {
       const res = await fetch('/api/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, rememberMe }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
@@ -56,7 +56,7 @@ export default function SigninPage() {
       }
 
       toast.success('Signed in successfully!');
-      signIn(data.user); // ✅ Pass the user object from the response
+      signIn(data.user);
 
       const userRole = data.role;
       if (userRole === 'admin') {
@@ -66,28 +66,6 @@ export default function SigninPage() {
       }
     } catch (error) {
       console.error('Error during signin:', error);
-      toast.error('An error occurred. Please try again.');
-    }
-  };
-
-  const handleMagicLink = async () => {
-    try {
-      const res = await fetch('/api/magic-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error('Failed to send magic link: ' + (data.error || 'Unknown error'));
-        return;
-      }
-
-      toast.success('Magic link sent! Please check your email.');
-    } catch (error) {
-      console.error('Error sending magic link:', error);
       toast.error('An error occurred. Please try again.');
     }
   };
@@ -144,14 +122,6 @@ export default function SigninPage() {
           Sign In
         </button>
 
-        <button
-          type="button"
-          onClick={handleMagicLink}
-          className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          Send Magic Link
-        </button>
-
         <p className="text-sm text-gray-600">
           Don’t have an account?{' '}
           <Link href="/signup" className="text-blue-600 hover:underline">
@@ -164,6 +134,7 @@ export default function SigninPage() {
     </main>
   );
 }
+
 
 
 
