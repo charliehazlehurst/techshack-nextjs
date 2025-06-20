@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,16 +14,7 @@ export default function SigninPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    const rememberedEmail = localStorage.getItem('rememberedEmail');
-    if (rememberedEmail) {
-      setEmail(rememberedEmail);
-      setRememberMe(true);
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,12 +40,6 @@ export default function SigninPage() {
         return;
       }
 
-      if (rememberMe) {
-        localStorage.setItem('rememberedEmail', email);
-      } else {
-        localStorage.removeItem('rememberedEmail');
-      }
-
       toast.success('Signed in successfully!');
       signIn(data.user);
 
@@ -66,6 +51,33 @@ export default function SigninPage() {
       }
     } catch (error) {
       console.error('Error during signin:', error);
+      toast.error('An error occurred. Please try again.');
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error('Please enter your email to reset password.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to send reset link.');
+        return;
+      }
+
+      toast.success('Password reset email sent!');
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
       toast.error('An error occurred. Please try again.');
     }
   };
@@ -104,22 +116,19 @@ export default function SigninPage() {
           className="w-full p-2 border rounded"
         />
 
-        <div className="flex items-center justify-center">
-          <input
-            type="checkbox"
-            id="rememberMe"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className="mr-2"
-          />
-          <label htmlFor="rememberMe">Remember Me</label>
-        </div>
-
         <button
           type="submit"
           className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           Sign In
+        </button>
+
+        <button
+          type="button"
+          onClick={handleForgotPassword}
+          className="text-blue-600 hover:underline mt-2"
+        >
+          Forgot Password?
         </button>
 
         <p className="text-sm text-gray-600">
