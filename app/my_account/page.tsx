@@ -1,107 +1,197 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/app/components/auth-context';
+import React, { useState } from 'react';
 import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 export default function MyAccount() {
-  const { user } = useAuth();
-  const [message, setMessage] = useState('');
-  const [newUsername, setNewUsername] = useState(user?.user_metadata?.username || '');
-  const [newEmail, setNewEmail] = useState(user?.email || '');
+  const [step, setStep] = useState(1); // 1 = verify, 2 = update
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      setNewUsername(user.user_metadata?.username || '');
-      setNewEmail(user.email || '');
+  const router = useRouter();
+
+  // Step 1 states
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  // Step 2 states
+  const [newUsername, setNewUsername] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+
+    try {
+      const res = await fetch('/api/verify-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.error || 'Verification failed.');
+        toast.error(data.error || 'Verification failed.');
+      } else {
+        toast.success('User verified. You can now update your details.');
+        setStep(2);
+      }
+    } catch (err) {
+      setMessage('Unexpected error.');
+      toast.error('Unexpected error.');
+    } finally {
+      setLoading(false);
     }
-  }, [user]);
-
-  const handleUpdate = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-  setMessage('');
-
-  if (!user?.email) {
-    setMessage('User email not found.');
-    setLoading(false);
-    return;
-  }
-
-  // Prepare payload for backend
-  const updates: any = {
-    email: user.email, // current email to find user in DB
   };
 
-  if (newUsername !== user.user_metadata?.username) updates.username = newUsername;
-  if (newEmail !== user.email) updates.newEmail = newEmail; // send newEmail as separate field
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
 
-  if (Object.keys(updates).length === 1) { // only has email (current email)
-    setMessage('No changes detected.');
-    setLoading(false);
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/update-user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      setMessage(data.error || 'Update failed.');
-      toast.error(data.error || 'Update failed.');
-    } else {
-      setMessage('Profile updated!');
-      toast.success('Account updated.');
+    if (!newUsername && !newEmail && !newPassword) {
+      setMessage('Please enter at least one field to update.');
+      setLoading(false);
+      return;
     }
-  } catch (err) {
-    setMessage('Unexpected error.');
-    toast.error('Unexpected error.');
-  } finally {
-    setLoading(false);
-  }
-};
 
+    if (newPassword && newPassword.length < 8) {
+      setMessage('Password must be at least 8 characters.');
+      toast.error('Password must be at least 8 characters.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/update-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email, // original email to find the user
+          username: newUsername,
+          newEmail,
+          password: newPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.error || 'Update failed.');
+        toast.error(data.error || 'Update failed.');
+      } else {
+        toast.success('Details successfully updated.');
+        setMessage('Details successfully updated.');
+
+        // Wait 2 seconds, then sign out and redirect
+        setTimeout(async () => {
+          await supabase.auth.signOut();
+          router.push('/');
+        }, 2000);
+      }
+    } catch (err) {
+      setMessage('Unexpected error.');
+      toast.error('Unexpected error.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto p-4">
       <h1 className="text-3xl font-bold text-center mb-6">My Account</h1>
 
-      <form onSubmit={handleUpdate} className="space-y-4">
-        <div>
-          <label>Email</label>
-          <input
-            type="email"
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-            className="w-full p-2 border rounded"
-            disabled={loading}
-          />
-        </div>
-        <div>
-          <label>Username</label>
-          <input
-            type="text"
-            value={newUsername}
-            onChange={(e) => setNewUsername(e.target.value)}
-            className="w-full p-2 border rounded"
-            disabled={loading}
-          />
-        </div>
-        <button type="submit" className="w-full bg-green-600 text-white py-2 rounded" disabled={loading}>
-          {loading ? 'Updating...' : 'Update Details'}
-        </button>
-        {message && <p className="mt-4 text-center text-red-600">{message}</p>}
-      </form>
+      {step === 1 ? (
+        <form onSubmit={handleVerify} className="space-y-4">
+          <div>
+            <label>Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-2 border rounded"
+              disabled={loading}
+              required
+            />
+          </div>
+          <div>
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-2 border rounded"
+              disabled={loading}
+              required
+            />
+          </div>
+          <div>
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-2 border rounded"
+              disabled={loading}
+              required
+            />
+          </div>
+          <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded" disabled={loading}>
+            {loading ? 'Verifying...' : 'Verify Account'}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={handleUpdate} className="space-y-4">
+          <div>
+            <label>New Username</label>
+            <input
+              type="text"
+              value={newUsername}
+              onChange={(e) => setNewUsername(e.target.value)}
+              className="w-full p-2 border rounded"
+              disabled={loading}
+            />
+          </div>
+          <div>
+            <label>New Email</label>
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              className="w-full p-2 border rounded"
+              disabled={loading}
+            />
+          </div>
+          <div>
+            <label>New Password</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full p-2 border rounded"
+              disabled={loading}
+            />
+          </div>
+          <button type="submit" className="w-full bg-green-600 text-white py-2 rounded" disabled={loading}>
+            {loading ? 'Updating...' : 'Update Account'}
+          </button>
+        </form>
+      )}
+
+      {message && <p className="mt-4 text-center text-red-600">{message}</p>}
     </div>
   );
 }
-
-
 
 
