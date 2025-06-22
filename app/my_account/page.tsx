@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 export default function MyAccount() {
-  const [step, setStep] = useState(1); // 1 = verify, 2 = update
+  const [step, setStep] = useState(1); 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
