@@ -1,7 +1,5 @@
-// app/api/update-user/route.js
-
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import supabaseAdmin from '@/lib/supabaseAdmin';  // default import without {}
 import { pwnedPassword } from 'hibp';
 
 export async function POST(req) {
@@ -68,6 +66,3 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Server error during update.' }, { status: 500 });
   }
 }
-
-
-
