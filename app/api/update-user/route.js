@@ -1,7 +1,7 @@
 // app/api/update-user/route.js
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { pwnedPassword } from 'hibp';
 
 export async function POST(req) {
@@ -12,8 +12,8 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Current email is required.' }, { status: 400 });
     }
 
-    // Find the user via email
-    const { data: { user }, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+    // Find the user via email using supabaseAdmin
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserByEmail(email);
 
     if (userError || !user) {
       return NextResponse.json({ error: 'User not found.' }, { status: 404 });
@@ -42,7 +42,7 @@ export async function POST(req) {
 
     // Update auth fields (email/password)
     if (Object.keys(authUpdates).length > 0) {
-      const { error: authUpdateError } = await supabase.auth.admin.updateUserById(user.id, authUpdates);
+      const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, authUpdates);
       if (authUpdateError) {
         console.error('Auth update error:', authUpdateError);
         return NextResponse.json({ error: authUpdateError.message }, { status: 500 });
@@ -51,7 +51,7 @@ export async function POST(req) {
 
     // Update profile (username)
     if (Object.keys(updates).length > 0) {
-      const { error: profileUpdateError } = await supabase
+      const { error: profileUpdateError } = await supabaseAdmin
         .from('profiles')
         .update(updates)
         .eq('id', user.id);
@@ -68,5 +68,6 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Server error during update.' }, { status: 500 });
   }
 }
+
 
 
