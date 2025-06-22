@@ -1,46 +1,65 @@
+// app/api/update-user/route.js
+
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import bcrypt from 'bcryptjs';
 import { pwnedPassword } from 'hibp';
 
 export async function POST(req) {
   try {
-    const { email, username: newUsername, newEmail, password } = await req.json();
+    const { email, username: newUsername, newEmail, password: newPassword } = await req.json();
 
     if (!email) {
       return NextResponse.json({ error: 'Current email is required.' }, { status: 400 });
     }
 
-    const updates = {};
-    if (newUsername) updates.username = newUsername;
-    if (newEmail) updates.email = newEmail;
+    // Find the user via email
+    const { data: { user }, error: userError } = await supabase.auth.admin.getUserByEmail(email);
 
-    if (password) {
-      if (password.length < 8) {
+    if (userError || !user) {
+      return NextResponse.json({ error: 'User not found.' }, { status: 404 });
+    }
+
+    const updates = {};
+    const authUpdates = {};
+
+    // Prepare profile updates
+    if (newUsername) updates.username = newUsername;
+
+    // Prepare auth updates
+    if (newEmail) authUpdates.email = newEmail;
+    if (newPassword) {
+      if (newPassword.length < 8) {
         return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 });
       }
 
-      const isPwned = await pwnedPassword(password);
+      const isPwned = await pwnedPassword(newPassword);
       if (isPwned) {
         return NextResponse.json({ error: 'Please choose a more secure password.' }, { status: 400 });
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-      updates.password = hashedPassword;
+      authUpdates.password = newPassword;
     }
 
-    if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: 'No fields to update.' }, { status: 400 });
+    // Update auth fields (email/password)
+    if (Object.keys(authUpdates).length > 0) {
+      const { error: authUpdateError } = await supabase.auth.admin.updateUserById(user.id, authUpdates);
+      if (authUpdateError) {
+        console.error('Auth update error:', authUpdateError);
+        return NextResponse.json({ error: authUpdateError.message }, { status: 500 });
+      }
     }
 
-    const { error } = await supabase
-      .from('users')
-      .update(updates)
-      .eq('email', email);
+    // Update profile (username)
+    if (Object.keys(updates).length > 0) {
+      const { error: profileUpdateError } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id);
 
-    if (error) {
-      console.error('Supabase update error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      if (profileUpdateError) {
+        console.error('Profile update error:', profileUpdateError);
+        return NextResponse.json({ error: profileUpdateError.message }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ message: 'User updated successfully.' }, { status: 200 });
