@@ -99,11 +99,22 @@ export default function MyAccount() {
         setMessage(data.error || 'Update failed.');
         toast.error(data.error || 'Update failed.');
       } else {
+        // After successful update
         toast.success('Details successfully updated.');
         setMessage('Details successfully updated.');
 
+        // Wait 2 seconds, then sign out and redirect
         setTimeout(async () => {
-          await supabase.auth.signOut();
+          try {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+              console.error('Sign out error:', error);
+              toast.error('Error signing out.');
+            }
+          } catch (signOutErr) {
+            console.error('Sign out unexpected error:', signOutErr);
+            toast.error('Unexpected error during sign out.');
+          }
           router.push('/');
         }, 2000);
       }
