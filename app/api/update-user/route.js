@@ -1,30 +1,28 @@
+// app/api/update-user/route.js
+
 import { NextResponse } from 'next/server';
-import supabaseAdmin from '@/lib/supabaseAdmin';  // default import without {}
 import { pwnedPassword } from 'hibp';
+import { createSupabaseServerClient } from '@/lib/supabaseServerClient'; // must be implemented
 
-export async function POST(req) {
+export async function POST(req, res) {
+  const supabase = createSupabaseServerClient(req, res);
+
   try {
-    const { email, username: newUsername, newEmail, password: newPassword } = await req.json();
+    const { username: newUsername, email: newEmail, password: newPassword } = await req.json();
 
-    if (!email) {
-      return NextResponse.json({ error: 'Current email is required.' }, { status: 400 });
-    }
+    const {
+      data: { user },
+      error: sessionError,
+    } = await supabase.auth.getUser();
 
-    // Find the user via email using supabaseAdmin
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserByEmail(email);
-
-    if (userError || !user) {
-      return NextResponse.json({ error: 'User not found.' }, { status: 404 });
+    if (sessionError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const updates = {};
-    const authUpdates = {};
 
-    // Prepare profile updates
     if (newUsername) updates.username = newUsername;
 
-    // Prepare auth updates
-    if (newEmail) authUpdates.email = newEmail;
     if (newPassword) {
       if (newPassword.length < 8) {
         return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 });
@@ -35,34 +33,35 @@ export async function POST(req) {
         return NextResponse.json({ error: 'Please choose a more secure password.' }, { status: 400 });
       }
 
-      authUpdates.password = newPassword;
-    }
-
-    // Update auth fields (email/password)
-    if (Object.keys(authUpdates).length > 0) {
-      const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, authUpdates);
-      if (authUpdateError) {
-        console.error('Auth update error:', authUpdateError);
-        return NextResponse.json({ error: authUpdateError.message }, { status: 500 });
+      const { error: pwError } = await supabase.auth.updateUser({ password: newPassword });
+      if (pwError) {
+        return NextResponse.json({ error: pwError.message }, { status: 500 });
       }
     }
 
-    // Update profile (username)
+    if (newEmail) {
+      const { error: emailError } = await supabase.auth.updateUser({ email: newEmail });
+      if (emailError) {
+        return NextResponse.json({ error: emailError.message }, { status: 500 });
+      }
+    }
+
     if (Object.keys(updates).length > 0) {
-      const { error: profileUpdateError } = await supabaseAdmin
+      const { error: profileError } = await supabase
         .from('profiles')
         .update(updates)
         .eq('id', user.id);
 
-      if (profileUpdateError) {
-        console.error('Profile update error:', profileUpdateError);
-        return NextResponse.json({ error: profileUpdateError.message }, { status: 500 });
+      if (profileError) {
+        return NextResponse.json({ error: profileError.message }, { status: 500 });
       }
     }
 
     return NextResponse.json({ message: 'User updated successfully.' }, { status: 200 });
+
   } catch (err) {
     console.error('Update error:', err);
     return NextResponse.json({ error: 'Server error during update.' }, { status: 500 });
   }
 }
+
