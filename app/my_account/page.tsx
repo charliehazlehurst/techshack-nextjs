@@ -6,18 +6,18 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 export default function MyAccount() {
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
   const router = useRouter();
 
-  // Step 1 states
+  // Step 1
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Step 2 states
+  // Step 2
   const [newUsername, setNewUsername] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -31,11 +31,7 @@ export default function MyAccount() {
       const res = await fetch('/api/verify-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-        }),
+        body: JSON.stringify({ username, email, password }),
       });
 
       const data = await res.json();
@@ -74,11 +70,23 @@ export default function MyAccount() {
     }
 
     try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        throw new Error('User session not found');
+      }
+
       const res = await fetch('/api/update-user', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
-          email, // original email to find the user
+          email, // for identification
           username: newUsername,
           newEmail,
           password: newPassword,
@@ -94,13 +102,13 @@ export default function MyAccount() {
         toast.success('Details successfully updated.');
         setMessage('Details successfully updated.');
 
-        // Wait 2 seconds, then sign out and redirect
         setTimeout(async () => {
           await supabase.auth.signOut();
           router.push('/');
         }, 2000);
       }
     } catch (err) {
+      console.error(err);
       setMessage('Unexpected error.');
       toast.error('Unexpected error.');
     } finally {
