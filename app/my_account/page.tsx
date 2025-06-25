@@ -99,11 +99,9 @@ export default function MyAccount() {
         setMessage(data.error || 'Update failed.');
         toast.error(data.error || 'Update failed.');
       } else {
-        // After successful update
         toast.success('Details successfully updated.');
         setMessage('Details successfully updated.');
-
-        // Wait 2 seconds, then sign out and redirect
+        
         setTimeout(async () => {
           try {
             const { error } = await supabase.auth.signOut();
