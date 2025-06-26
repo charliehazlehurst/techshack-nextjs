@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { createClient } from '@supabase/supabase-js';
 
 type Review = {
   user_name: string;
@@ -10,12 +11,42 @@ type Review = {
   rating: number;
 };
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export default function ReviewsPage() {
   const [userName, setUserName] = useState('');
   const [userReview, setUserReview] = useState('');
   const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Prefill username if logged in
+  useEffect(() => {
+    const getUserInfo = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.username) {
+          setUserName(profile.username);
+        }
+      }
+    };
+
+    getUserInfo();
+  }, []);
 
   // Fetch reviews
   useEffect(() => {
@@ -38,6 +69,13 @@ export default function ReviewsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (rating < 1) {
+      alert('Please select a rating of at least 1 star.');
+      return;
+    }
+
+    setSubmitting(true);
+
     const payload = {
       user_name: userName,
       user_review: userReview,
@@ -59,11 +97,12 @@ export default function ReviewsPage() {
 
       const newReview = await res.json();
       setReviews(prev => [newReview, ...prev]);
-      setUserName('');
       setUserReview('');
       setRating(0);
     } catch (error) {
       console.error('Error submitting review:', error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -87,22 +126,33 @@ export default function ReviewsPage() {
 
       {/* Review Form */}
       <form onSubmit={handleSubmit} className="text-center max-w-md mx-auto mb-8">
+        <label htmlFor="username" className="block mb-1 text-left font-semibold">
+          Username:
+        </label>
         <input
+          id="username"
           type="text"
-          placeholder="Name"
+          placeholder="Enter your username"
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
           required
           className="w-full mb-4 p-2 border rounded"
+          disabled={!!userName} // lock if auto-filled
         />
+
+        <label htmlFor="review" className="block mb-1 text-left font-semibold">
+          Review:
+        </label>
         <textarea
+          id="review"
           rows={4}
-          placeholder="Review"
+          placeholder="Write your review..."
           value={userReview}
           onChange={(e) => setUserReview(e.target.value)}
           required
           className="w-full mb-4 p-2 border rounded"
         />
+
         <div className="mb-4">
           <label className="block mb-1 font-semibold">Rating:</label>
           <div className="flex justify-center space-x-1">
@@ -111,15 +161,27 @@ export default function ReviewsPage() {
                 type="button"
                 key={star}
                 onClick={() => setRating(star)}
-                className={`text-2xl ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                onMouseEnter={() => setHoverRating(star)}
+                onMouseLeave={() => setHoverRating(null)}
+                className={`text-2xl ${
+                  (hoverRating ?? rating) >= star ? 'text-yellow-400' : 'text-gray-300'
+                }`}
+                aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
               >
                 ★
               </button>
             ))}
           </div>
         </div>
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-          Submit Review
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className={`bg-blue-600 text-white px-4 py-2 rounded ${
+            submitting ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          {submitting ? 'Submitting...' : 'Submit Review'}
         </button>
       </form>
 
