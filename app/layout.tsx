@@ -2,9 +2,9 @@ import './globals.css';
 import type { Metadata } from 'next';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import AuthProviderWrapper from './AuthProviderWrapper';
-import { ToastContainer } from 'react-toastify';        // <-- ADD THIS
-import 'react-toastify/dist/ReactToastify.css';          // <-- ADD THIS
+import { AuthProvider } from './components/auth-context';  // <-- use this!
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const metadata: Metadata = {
   title: 'Tech Shack',
@@ -27,12 +27,12 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body>
-        <AuthProviderWrapper>
+        <AuthProvider> {/* <-- Wrap with AuthProvider here */}
           <Navbar />
           {children}
           <Footer />
-        </AuthProviderWrapper>
-        <ToastContainer />   {/* <-- ADD HERE */}
+        </AuthProvider>
+        <ToastContainer />
       </body>
     </html>
   );
