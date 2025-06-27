@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase'; // For client-side public queries
 import supabaseAdmin from '@/lib/supabaseAdmin'; // Service role for inserting with user_id
-
+//Update
 // GET: Fetch all reviews
 export async function GET() {
   try {
