@@ -25,40 +25,6 @@ export default function ReviewsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Load session and get username if logged in
-  useEffect(() => {
-    const loadUser = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-
-      if (error) {
-        console.error('Session error:', error.message);
-        return;
-      }
-
-      const user = session?.user;
-      if (user) {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Profile fetch error:', profileError.message);
-        }
-
-        if (profile?.username) {
-          setUserName(profile.username);
-        }
-      }
-    };
-
-    loadUser();
-  }, []);
-
   // Fetch reviews
   useEffect(() => {
     fetch('/api/reviews')
@@ -78,6 +44,11 @@ export default function ReviewsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!userName.trim() || userName.length < 3) {
+      alert('Please enter a valid username (at least 3 characters).');
+      return;
+    }
 
     if (rating < 1) {
       alert('Please select a rating of at least 1 star.');
@@ -123,7 +94,6 @@ export default function ReviewsPage() {
 
   return (
     <main className="min-h-screen p-4">
-      {/* Logo */}
       <div className="logo py-4 text-center">
         <Link href="/">
           <Image src="/images/logo.jpg" alt="Tech Shack Logo" width={310} height={136} />
@@ -132,7 +102,6 @@ export default function ReviewsPage() {
 
       <h1 className="text-center text-3xl font-bold mb-6">SUBMIT A REVIEW BELOW!</h1>
 
-      {/* Review Form */}
       <form onSubmit={handleSubmit} className="text-center max-w-md mx-auto mb-8">
         <label htmlFor="username" className="block mb-1 text-left font-semibold">
           Username:
@@ -145,7 +114,9 @@ export default function ReviewsPage() {
           onChange={(e) => setUserName(e.target.value)}
           required
           className="w-full mb-4 p-2 border rounded"
-          readOnly={userName !== ''} // Allows focus, doesn't auto-close keyboard
+          inputMode="text"
+          autoCapitalize="none"
+          autoCorrect="off"
         />
 
         <label htmlFor="review" className="block mb-1 text-left font-semibold">
@@ -195,7 +166,6 @@ export default function ReviewsPage() {
 
       <hr className="w-3/4 mx-auto my-6 border-gray-400" />
 
-      {/* Display Reviews */}
       <div className="max-w-2xl mx-auto">
         <h2 className="text-xl font-semibold text-center mb-4">Reviews:</h2>
         {loading ? (
@@ -215,5 +185,3 @@ export default function ReviewsPage() {
     </main>
   );
 }
-
-
