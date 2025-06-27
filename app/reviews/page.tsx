@@ -27,7 +27,7 @@ export default function ReviewsPage() {
 
   // Fetch reviews
   useEffect(() => {
-    fetch('/api/reviews')
+    fetch('/app/api/reviews/route.js')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch reviews');
         return res.json();
