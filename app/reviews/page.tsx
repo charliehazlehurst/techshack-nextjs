@@ -25,19 +25,30 @@ export default function ReviewsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Prefill username if logged in
+  // Load session and get username if logged in
   useEffect(() => {
-    const getUserInfo = async () => {
+    const loadUser = async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
 
+      if (error) {
+        console.error('Session error:', error.message);
+        return;
+      }
+
+      const user = session?.user;
       if (user) {
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('username')
           .eq('id', user.id)
           .single();
+
+        if (profileError) {
+          console.error('Profile fetch error:', profileError.message);
+        }
 
         if (profile?.username) {
           setUserName(profile.username);
@@ -45,27 +56,26 @@ export default function ReviewsPage() {
       }
     };
 
-    getUserInfo();
+    loadUser();
   }, []);
 
   // Fetch reviews
   useEffect(() => {
     fetch('/api/reviews')
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch reviews');
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         setReviews(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Failed to fetch reviews:', err);
         setLoading(false);
       });
   }, []);
 
-  // Submit review
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -91,12 +101,10 @@ export default function ReviewsPage() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        throw new Error('Failed to submit review');
-      }
+      if (!res.ok) throw new Error('Failed to submit review');
 
       const newReview = await res.json();
-      setReviews(prev => [newReview, ...prev]);
+      setReviews((prev) => [newReview, ...prev]);
       setUserReview('');
       setRating(0);
     } catch (error) {
@@ -137,7 +145,7 @@ export default function ReviewsPage() {
           onChange={(e) => setUserName(e.target.value)}
           required
           className="w-full mb-4 p-2 border rounded"
-          disabled={!!userName} // lock if auto-filled
+          readOnly={userName !== ''} // Allows focus, doesn't auto-close keyboard
         />
 
         <label htmlFor="review" className="block mb-1 text-left font-semibold">
@@ -185,7 +193,6 @@ export default function ReviewsPage() {
         </button>
       </form>
 
-      {/* Divider */}
       <hr className="w-3/4 mx-auto my-6 border-gray-400" />
 
       {/* Display Reviews */}

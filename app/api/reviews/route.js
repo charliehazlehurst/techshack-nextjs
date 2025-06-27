@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase'; // For RLS-safe public use
-import supabaseAdmin from '@/lib/supabaseAdmin'; // For service role, use for admin actions
+import { supabase } from '@/lib/supabase'; // For client-side public queries
+import supabaseAdmin from '@/lib/supabaseAdmin'; // Service role for inserting with user_id
 
-// GET: Fetch reviews
+// GET: Fetch all reviews
 export async function GET() {
   try {
     const { data, error } = await supabase
@@ -11,7 +11,7 @@ export async function GET() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Fetch error:', error);
+      console.error('Fetch error:', error.message);
       return NextResponse.json({ error: 'Failed to fetch reviews.' }, { status: 500 });
     }
 
@@ -22,17 +22,17 @@ export async function GET() {
   }
 }
 
-// POST: Submit review
+// POST: Submit a new review
 export async function POST(req) {
   try {
     const { user_name, user_review, rating } = await req.json();
 
-    // Basic validation
-    if (!user_name || !user_review || !rating) {
-      return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
+    // Validate input
+    if (!user_name || !user_review || typeof rating !== 'number' || rating < 1 || rating > 5) {
+      return NextResponse.json({ error: 'All fields are required and rating must be between 1-5.' }, { status: 400 });
     }
 
-    // Try to find the user by username in the profiles table
+    // Get user_id from the profiles table by username
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('id')
@@ -45,7 +45,7 @@ export async function POST(req) {
 
     const userId = profile.id;
 
-    // Insert review
+    // Insert new review
     const { data: insertedReview, error: insertError } = await supabaseAdmin
       .from('reviews')
       .insert([
@@ -60,13 +60,14 @@ export async function POST(req) {
       .single();
 
     if (insertError) {
-      console.error('Insert error:', insertError);
+      console.error('Insert error:', insertError.message);
       return NextResponse.json({ error: 'Failed to submit review.' }, { status: 500 });
     }
 
     return NextResponse.json(insertedReview, { status: 200 });
   } catch (err) {
-    console.error('Unexpected error submitting review:', err);
+    console.error('Unexpected error in POST /reviews:', err);
     return NextResponse.json({ error: 'Server error.' }, { status: 500 });
   }
 }
+
