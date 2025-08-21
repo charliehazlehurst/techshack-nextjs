@@ -29,16 +29,6 @@ _A modern full-stack web app built with Next.js, Supabase, SQL, and deployed on 
 
 ---
 
-## 📸 Screenshots  
-*(Add your own screenshots here — showing off login, dashboard, main UI, etc)*  
-
-Example layout:  
-
-![Homepage](screenshots/home.png)  
-![Dashboard](screenshots/dashboard.png)  
-
----
-
 ## 🛠️ Getting Started  
 
 ### 1. Clone the repository  
