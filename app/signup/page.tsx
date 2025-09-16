@@ -38,9 +38,6 @@ export default function RegisterPage() {
         return;
       }
 
-      setMessage('Signup successful! Please check your email to confirm your account.');
-      toast.success('Signup successful! Please check your email.');
-
       // Optionally, delay navigation to give the user time to read the success message
       setTimeout(() => {
         router.push('/signin');

@@ -1,11 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { pwnedPassword } from 'hibp';
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import { supabaseAdmin } from '@/lib/supabaseAdmin'; // Use service role key only in server-side code
 
 export async function POST(req) {
   try {
@@ -15,53 +9,35 @@ export async function POST(req) {
       return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
     }
 
-    // Check if password is pwned
-    const isPwned = await pwnedPassword(password);
-    if (isPwned) {
-      return NextResponse.json({ error: 'Please choose a more secure password.' }, { status: 400 });
-    }
-
-    // Create the user (set email_confirm to false so confirmation is required)
+    // Create user WITHOUT email confirmation
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: false,
+      email_confirm: true, // <-- confirms immediately
     });
 
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 400 });
-    }
+    if (authError) return NextResponse.json({ error: authError.message }, { status: 400 });
 
-    const user = authData?.user;
-    if (!user || !user.id) {
-      return NextResponse.json({ error: 'User creation failed.' }, { status: 500 });
-    }
+    const user = authData.user;
 
-    // Insert profile
+    // Add profile
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .insert([{ id: user.id, email, username, role: 'user' }]);
+      .insert([{ id: user.id, username, email, role: 'user' }]);
 
-    if (profileError) {
-      return NextResponse.json({ error: profileError.message }, { status: 500 });
-    }
+    if (profileError) return NextResponse.json({ error: profileError.message }, { status: 500 });
 
-    // Send magic link
-    const { error: magicLinkError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
-    });
-
-    if (magicLinkError) {
-      return NextResponse.json({ error: magicLinkError.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ message: 'Signup successful! Please check your email to confirm your account.' }, { status: 201 });
+    return NextResponse.json({
+      message: 'Signup successful! You can now sign in.',
+      user: { id: user.id, email: user.email },
+    }, { status: 201 });
 
   } catch (err) {
-    console.error('Unexpected signup error:', err);
+    console.error(err);
     return NextResponse.json({ error: 'Unexpected error during signup.' }, { status: 500 });
   }
 }
+
 
 
 

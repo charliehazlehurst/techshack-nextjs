@@ -34,12 +34,6 @@ export default function SigninPage() {
         return;
       }
 
-      if (data.emailConfirmed === false) {
-        setMessage('Please verify your email before signing in.');
-        toast.error('Please verify your email before signing in.');
-        return;
-      }
-
       toast.success('Signed in successfully!');
       signIn(data.user);
 
