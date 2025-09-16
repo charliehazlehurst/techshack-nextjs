@@ -1,6 +1,7 @@
 // app/api/signup/route.js
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase'; // regular client is fine
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function POST(req) {
   try {
