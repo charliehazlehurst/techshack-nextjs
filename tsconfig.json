@@ -4,7 +4,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
     "noEmit": true,
     "incremental": true,
     "module": "esnext",
@@ -19,6 +19,7 @@
       }
     ],
     "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
 
     // ✅ These two lines are required
     "baseUrl": ".", 
@@ -31,7 +32,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-, "app/auth/callback/page.js", "app/api/signin/route.js", "app/api/signup/route.js", "lib/supabaseAdmin.js"  ],
+, "app/auth/callback/page.js", "app/api/signin/route.js", "app/api/signup/route.js", "lib/supabaseAdmin.ts"  ],
   "exclude": ["node_modules"]
 }
 
