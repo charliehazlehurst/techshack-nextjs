@@ -31,7 +31,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-, "app/auth/callback/page.js", "app/api/signin/route.js", "app/api/signup/route.js", "lib/supabaseAdmin.js"  ],
+, "app/auth/callback/page.js", "app/api/signin/route.js", "app/api/signup/route.js", "lib/supabaseAdmin.ts"  ],
   "exclude": ["node_modules"]
 }
 
